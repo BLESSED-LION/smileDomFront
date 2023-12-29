@@ -76,8 +76,8 @@ export const renderSend = (props) => (
             marginHorizontal: 4,
         }}
     >
-        <TouchableOpacity>
+        {/* <TouchableOpacity> */}
             <FontAwesome name="send" size={24} color="black" />
-        </TouchableOpacity>
+        {/* </TouchableOpacity> */}
     </Send>
 );

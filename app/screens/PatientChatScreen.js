@@ -1,29 +1,77 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, Image, TouchableOpacity, TextInput, StyleSheet } from 'react-native';
 import { GiftedChat } from 'react-native-gifted-chat';
 import { FontAwesome } from '@expo/vector-icons';
 import { useTheme } from '../constants/theme';
 import { renderInputToolbar, renderActions, renderComposer, renderSend } from '../components/InputToolbar';
 import { useNavigation } from '@react-navigation/native';
+import { auth, db } from '../config/firebaseConfig';
+import { addDoc, collection, getDocs, orderBy, query, where, FieldPath, FieldValue, onSnapshot } from 'firebase/firestore';
+import { useSelector } from 'react-redux';
 
 const PatientChatScreen = (route) => {
     const [messages, setMessages] = useState([]);
     const [text, setText] = useState('');
+    const [error, setError] = useState(null);
     const { theme } = useTheme();
     console.log(route)
     const { user } = route.route.params;
+    const senderId = auth.currentUser.uid
+    const receiverId = user.id
     console.log(user)
     const navigation = useNavigation()
+    const messagesCollectionRef = collection(db, 'messages');
+    const u = useSelector((state) => state.user.user);
 
-    const onSend = (newMessages = []) => {
-        setMessages(previousMessages => GiftedChat.append(previousMessages, newMessages));
-    };
+    // const onSend = (newMessages = []) => {
+    //     setMessages(previousMessages => GiftedChat.append(previousMessages, newMessages));
+    // };
+
+    useEffect(() => {
+        const q = query(messagesCollectionRef, orderBy('createdAt', 'desc'));
+
+        const unsubscribe = onSnapshot(q, where('senderId', '==', senderId) ||
+          where(
+            'receiverId', '==', senderId
+          ), querySnapshot => {
+            const msgs = querySnapshot.docs.map((doc) => doc.data())
+            console.log("snapshot: ", msgs)
+            setMessages(
+                querySnapshot.docs.map(doc => ({
+                    _id: doc.data()._id,
+                    createdAt: doc.data().createdAt.toDate(),
+                    text: doc.data().mesage,
+                    senderId: doc.data().senderId,
+                    receiverId: doc.data().receiverId,
+                    user: u
+                }))
+            );
+            console.log(messages)
+        });
+
+        return () => unsubscribe();
+    }, []);
+
+    const onSend = useCallback((messages = []) => {
+        setMessages(previousMessages =>
+            GiftedChat.append(previousMessages, messages)
+        );
+        const { _id, createdAt, text, user } = messages[0];
+        console.log(text)
+        addDoc(collection(db, 'messages'), {
+            _id,
+            createdAt,
+            mesage: text,
+            senderId: senderId,
+            receiverId,
+        });
+    }, []);
 
     return (
         <View style={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity>
-                    <Image source={user.image} style={styles.profileImage} />
+                    <Image source={user.image ? user.image : require("../../assets/icon.png")} style={styles.profileImage} />
                 </TouchableOpacity>
                 <View style={styles.userInfo}>
                     <TouchableOpacity style={styles.userName}>
@@ -54,9 +102,7 @@ const PatientChatScreen = (route) => {
                 renderActions={renderActions}
                 renderComposer={renderComposer}
                 renderSend={renderSend}
-                user={{
-                    _id: 1,
-                }}
+                user={auth.currentUser}
             />
         </View>
     );

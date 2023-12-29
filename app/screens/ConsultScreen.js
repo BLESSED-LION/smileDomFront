@@ -1,14 +1,53 @@
-import {TextInput, StyleSheet, Text, View, Image, TouchableOpacity, ScrollView } from 'react-native'
-import React, { useState }  from 'react'
+import {TextInput, StyleSheet, Text, View, Image, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native'
+import React, { useEffect, useState }  from 'react'
 import { useTheme } from '../constants/theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import DoctorList from '../components/DoctorList';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import {db} from "../config/firebaseConfig"
+
 
 const ConsultScreen = () => {
   const { theme } = useTheme();
-  const [selectedCategory, setSelectedCategory] = useState('Category 1');
+  const [selectedCategory, setSelectedCategory] = useState('General Consultant');
+  const [loading, setLoading] = useState(true);
+  const [doctors, setDoctors] = useState([]);
+  const [gp, setGp] = useState([]);
+  const [dentists, setDentists] = useState([]);
   const user = useSelector((state) => state.auth.user);
+
+  const getDoctors = async () => {
+    const usersCollectionRef = collection(db, 'users');
+
+    const querySnapshot = await getDocs(
+      query(
+        usersCollectionRef,
+        where('type', '==', 'doctor') // Filter for users with type "doctor"
+      )
+    );
+
+    querySnapshot.forEach((doc) => {
+      const user = doc.data();
+      const userExists = doctors.some((doctor) => doctor.id === user.id);
+      if (!userExists) {
+        setDoctors([...doctors, user]); // Add the user only if not already present
+      }
+      console.log(user.name, user.email, user.specialization); // Example usage
+    });    
+    console.log("doctors ", doctors)
+    setLoading(false)
+  }
+
+  useEffect(() => {
+    getDoctors();
+
+    const gp = doctors.filter((doctor) => doctor.specialization === "general practitioner");
+    const dentists = doctors.filter((doctor) => doctor.specialization === "dentist");
+    setGp(gp)
+    setDentists(dentists)
+    console.log(doctors)
+  }, [doctors])
 
   const SearchBar=()=>{
     return(
@@ -103,7 +142,7 @@ const ConsultScreen = () => {
               borderRadius: 5,
             }}
             source={require('../../assets/Consult/Frame.png')} /> */}
-            <DoctorList />
+            <DoctorList data={gp} />
           </View>
         );
       case 'Dentist':
@@ -112,11 +151,12 @@ const ConsultScreen = () => {
           style={{
             justifyContent: 'center',
             alignItems: 'center',
-            paddingTop: 300,
+            paddingTop: 15,
           }}
           >
             {/* Render content for Category 2 */}
-            <Text style={{ fontSize: 20 }} >No Dentist Found</Text>
+            {/* <Text style={{ fontSize: 20 }} >No Dentist Found</Text> */}
+            <DoctorList data={dentists} />
           </View>
         );
         case 'Neurologist':
@@ -125,7 +165,7 @@ const ConsultScreen = () => {
             style={{
               justifyContent: 'center',
               alignItems: 'center',
-              paddingTop: 300,
+              paddingTop: 15,
             }}
             >
               {/* Render content for Category 1 */}
@@ -138,7 +178,7 @@ const ConsultScreen = () => {
               style={{
                 justifyContent: 'center',
                 alignItems: 'center',
-                paddingTop: 300,
+                paddingTop: 15,
               }}
               >
                 {/* Render content for Category 1 */}
@@ -198,7 +238,7 @@ const ConsultScreen = () => {
           <DoctorCategories category="Neurologist" detail="Focuses on brain damage" />
           <DoctorCategories category="Dentists" detail="Focuses on brain damage" />
           <DoctorCategories category="Dentistss" detail="Focuses on brain damage" />
-          <DoctorCategories category="Dentistsss" detail="Focuses on brain damage" />
+          <DoctorCategories category="Dent" detail="Focuses on brain damage" />
           {/* Add more DoctorCategories components for additional categories */}
         </ScrollView>
 

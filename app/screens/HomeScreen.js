@@ -22,10 +22,10 @@ const HomeScreen = ({ navigation }) => {
   const user = useSelector((state) => state.auth.user);
   const [userInfo, setUserInfo] = useState({});
   const [visible, setVisible] = React.useState(user.user.displayName === undefined ? true : false);
-  const [v1, setV1] = React.useState(userInfo && userInfo.type != extractLastName(user.user.displayName) === undefined ? true : false);
+  const [v1, setV1] = React.useState(userInfo && userInfo.type != extractLastName(user.user.displayName) ? true : false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const showModal = () => setVisible(true);
+  const showModal = () => setVisible(false);
   const hideModal = () => setVisible(false);
   const dispatch = useDispatch()
 
@@ -90,6 +90,13 @@ const HomeScreen = ({ navigation }) => {
       if (auth.currentUser && !u) {
         addUser(creds);
       } else {
+        setV1(false)
+        Toast.show({
+          text1: 'Profile already up to date',
+          type: 'success', // Can be 'success', 'info', 'warning', or 'error'
+          position: 'top', // Can be 'top', 'center', or 'bottom'
+          duration: 3000, // Duration in milliseconds
+        });
         console.log("No current user")
       }
     }).then(() => {

@@ -1,16 +1,8 @@
 import { useNavigation } from '@react-navigation/native';
 import * as React from 'react';
-import { View, StyleSheet, Image, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { View, StyleSheet, Image, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { Card, Title, Paragraph } from 'react-native-paper';
-
-const data = [
-  // { id: 1, name: 'John Doe', specialty: 'Software Engineer', image: require('../../assets/doctors/1.png') },
-  { id: 1, name: 'Jane Smith', specialty: 'GP', image: require('../../assets/doctors/2.png') },
-  { id: 2, name: 'Mary Skrill', specialty: 'GP', image: require('../../assets/doctors/2.png') },
-  { id: 3, name: 'Dirty Diana', specialty: 'GP', image: require('../../assets/doctors/2.png') },
-  { id: 4, name: 'Smooth Skillz', specialty: 'GP', image: require('../../assets/doctors/2.png') },
-  // Add more user data here
-];
+import { extractAllButLastName } from '../constants/helpers';
 
 const UserCard = ({ name, specialty, image, onPress }) => {
   return (
@@ -25,20 +17,22 @@ const UserCard = ({ name, specialty, image, onPress }) => {
   )
 };
 
-const DoctorList = () => {
+const DoctorList = ({ data }) => {
   const navigation = useNavigation();
   // <ScrollView>
   return (
     <View style={styles.container}>
-      {data.map(user => (
-        <UserCard
-          key={user.id}
-          name={user.name}
-          specialty={user.specialty}
-          image={user.image}
-          onPress={() => navigation.navigate("chatPatient", {user})}
-        />
-      ))}
+      {data != [] ? data.map(user => {
+        return (
+          <UserCard
+            key={user.id}
+            name={extractAllButLastName(user.name)}
+            specialty={user.specialization === "general practitioner" ? "GP" : user.specialization}
+            image={user.image ? user.image : require("../../assets/icon.png")}
+            onPress={() => navigation.navigate("chatPatient", { user })}
+          />
+        )
+      }) : <Text>Still loading data...</Text>}
     </View>
   )
   // </ScrollView>
