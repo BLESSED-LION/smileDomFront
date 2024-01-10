@@ -6,8 +6,9 @@ import { useTheme } from '../constants/theme';
 import { renderInputToolbar, renderActions, renderComposer, renderSend } from '../components/InputToolbar';
 import { useNavigation } from '@react-navigation/native';
 import { auth, db } from '../config/firebaseConfig';
-import { addDoc, collection, getDocs, orderBy, query, where, FieldPath, FieldValue, onSnapshot } from 'firebase/firestore';
+import { doc, addDoc, collection, orderBy, query, where, onSnapshot, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { useSelector } from 'react-redux';
+import Toast from 'react-native-toast-message';
 
 const PatientChatScreen = (route) => {
     const [messages, setMessages] = useState([]);
@@ -23,17 +24,11 @@ const PatientChatScreen = (route) => {
     const messagesCollectionRef = collection(db, 'messages');
     const u = useSelector((state) => state.user.user);
 
-    // const onSend = (newMessages = []) => {
-    //     setMessages(previousMessages => GiftedChat.append(previousMessages, newMessages));
-    // };
-
     useEffect(() => {
-        const q = query(messagesCollectionRef, orderBy('createdAt', 'desc'));
+        const q = query(messagesCollectionRef, orderBy('createdAt', 'desc'), where('senderId', 'in', [auth.currentUser.uid, user.id]),
+            where('receiverId', 'in', [auth.currentUser.uid, user.id]),);
 
-        const unsubscribe = onSnapshot(q, where('senderId', '==', senderId) ||
-          where(
-            'receiverId', '==', senderId
-          ), querySnapshot => {
+        const unsubscribe = onSnapshot(q, querySnapshot => {
             const msgs = querySnapshot.docs.map((doc) => doc.data())
             console.log("snapshot: ", msgs)
             setMessages(
@@ -53,18 +48,42 @@ const PatientChatScreen = (route) => {
     }, []);
 
     const onSend = useCallback((messages = []) => {
+        const uRef = doc(db, "users", route.route.params.user.__id);
+        const newData = auth.currentUser.uid
+
         setMessages(previousMessages =>
             GiftedChat.append(previousMessages, messages)
         );
+        console.log("checking messages...: ", messages)
         const { _id, createdAt, text, user } = messages[0];
         console.log(text)
-        addDoc(collection(db, 'messages'), {
-            _id,
-            createdAt,
-            mesage: text,
-            senderId: senderId,
-            receiverId,
-        });
+        try {
+            addDoc(collection(db, 'messages'), {
+                _id,
+                createdAt,
+                mesage: text,
+                senderId: senderId,
+                receiverId,
+            }).then(() => {
+                updateDoc(uRef, {
+                    patients: arrayUnion(newData)
+                  })
+                    .then(() => {
+                        console.log("Document updated successfully");
+                    })
+                    .catch((error) => {
+                        console.error("Error updating document: ", error);
+                    });
+            })
+        } catch (error) {
+            Toast.show({
+                text1: 'An error occured while updating',
+                // text2: 'Additional text can go here',
+                type: 'error', // Can be 'success', 'info', 'warning', or 'error'
+                position: 'top', // Can be 'top', 'center', or 'bottom'
+                duration: 3000, // Duration in milliseconds
+            });
+        }
     }, []);
 
     return (
@@ -82,7 +101,7 @@ const PatientChatScreen = (route) => {
                         <TouchableOpacity style={styles.tico}>
                             <FontAwesome name="search" size={24} color={theme.colors.yellow} />
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.tico}>
+                        <TouchableOpacity style={styles.tico} onPress={() => navigation.navigate("callScreen")}>
                             <FontAwesome name="video-camera" size={24} color={theme.colors.yellow} />
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.tico} onPress={() => navigation.navigate("conResult")}>

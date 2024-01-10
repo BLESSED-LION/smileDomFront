@@ -1,18 +1,95 @@
 import { TextInput, StyleSheet, Text, View, Image, TouchableOpacity, ScrollView } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTheme } from '../constants/theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Badge } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
+import { auth, db } from '../config/firebaseConfig';
+import { collection, getDocs, limit, orderBy, query, where } from 'firebase/firestore';
+import { formatTimestampLikeWhatsApp } from '../constants/helpers';
 
 const PatientsScreen = () => {
   const { theme } = useTheme();
   const navigation = useNavigation()
+  const [doctor, setDoctor] = useState({})
+  const [patients, setPatients] = useState([])
+  const [msgs, setMsgs] = useState([])
   const users = [
     { name: 'User 1', profileImage: require('../../assets/doctors/1.png'), lastMessage: 'Hello', unreadMessages: 2, lastMessageTime: '10:30 AM' },
     { name: 'User 2', profileImage: require('../../assets/doctors/2.png'), lastMessage: 'Hey there', unreadMessages: 0, lastMessageTime: 'Yesterday' },
     { name: 'User 3', profileImage: require('../../assets/doctors/3.png'), lastMessage: 'What\'s up?', unreadMessages: 5, lastMessageTime: '2 days ago' }
   ];
+
+  async function getPatientsAndMessages() {
+    try {
+      // Get the patients' IDs for the doctor
+      const uid = auth.currentUser.uid;
+
+      // Query Firestore with UID
+      const q = query(collection(db, "users"), where("id", "==", uid));
+      // const docRef = collection(db, "users", uid);
+      getDocs(q)
+        .then((snapshot) => {
+          if (snapshot.docs.length > 0) {
+            const userDoc = snapshot.docs[0];
+            const userData = userDoc.data();
+            setDoctor({...userData, __id: userDoc.id})
+            console.log("Doctor data:", userData);
+          } else {
+            console.log("User not found");
+          }
+        })
+        .catch((error) => {
+          console.error("Error getting user:", error);
+        });
+
+      // Get the patient data and messages for each patient
+      const patientsAndMessages = [];
+      for (const patientId of doctor.patients) {
+        const patientRef = query(collection(db, "users"), where("id", "==", patientId));
+        const patientSnapshot = await getDocs(patientRef);
+
+        const patientData = patientSnapshot.docs[0].data();
+        const patientName = patientData.name;
+        const patientPhoto = patientData.photo ? patientData.photo : require("../../assets/happy_icon.png");
+
+        const messagesRef = query(
+          collection(db, "messages"),
+          where("senderId", "in", [auth.currentUser.uid, patientId]),
+          where("receiverId", "in", [auth.currentUser.uid, patientId]),
+          orderBy("createdAt", "desc"),
+          limit(10) // Optional: Limit the number of messages fetched
+        );
+        const messagesSnapshot = await getDocs(messagesRef);
+        const messages = messagesSnapshot.docs.map((doc) => ({
+          ...doc.data(),
+          id: doc.id,
+        }));
+        console.log("Messages: ", messages)
+        setMsgs(messages)
+        console.log("messages: ", msgs)
+
+        patientsAndMessages.push({
+          patientId: patientId,
+          name: patientName,
+          profileImage: patientPhoto,
+          messages: messages,
+          lastMessage: messages[0] ? messages[0].mesage : "No messages",
+          unreadMessages: 1,
+          lastMessageTime: messages[0] ? formatTimestampLikeWhatsApp(messages[0].createdAt) : "Last time"
+        });
+        setPatients(patientsAndMessages)
+      }
+
+      console.log(patientsAndMessages); // Output the fetched data
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  useEffect(() => {
+    getPatientsAndMessages();
+  }, [])
 
   const SearchBar = () => {
     return (
@@ -79,8 +156,11 @@ const PatientsScreen = () => {
       </View>
 
       <View>
-        {users.map((user, index) => (
-          <TouchableOpacity style={styles.userContainer} key={index} onPress={() => navigation.navigate("chatDoctor")}>
+        {patients.map((user, index) => (
+          <TouchableOpacity style={styles.userContainer} key={index} onPress={() => navigation.navigate("chatDoctor", {
+            patient: user,
+            messages: msgs
+          })}>
             <Image source={user.profileImage} style={styles.profileImage} />
             <View style={styles.userInfo}>
               <Text style={styles.userName}>{user.name}</Text>

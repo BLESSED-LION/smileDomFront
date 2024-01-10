@@ -28,7 +28,7 @@ const ConsultScreen = () => {
     );
 
     querySnapshot.forEach((doc) => {
-      const user = doc.data();
+      const user = {...doc.data(), __id: doc.id};
       const userExists = doctors.some((doctor) => doctor.id === user.id);
       if (!userExists) {
         setDoctors([...doctors, user]); // Add the user only if not already present

@@ -18,7 +18,7 @@ const LoginInput = ({setCountry}) => {
     <View style={{width:"100%"}}>
         <Text style={[styles.title,{color: theme.colors.Text}]}>Country</Text>
         <View style={[styles.countrySelect,{borderColor: theme.colors.grey2}]}>
-            <View style={{flexDirection: 'row', alignItems: 'center' }}>
+            <View style={{flexDirection: 'row', alignItems: 'center', width:"100%" }}>
                 <CountryPicker
                     countryCode={ctry ? ctry.cca2 : ''}
                     withFlag={true}
@@ -27,7 +27,9 @@ const LoginInput = ({setCountry}) => {
                     onSelect={(value) => handleSelect(value)}
                     style={styles.countryPickerContainer}
                 />
-                <Text style={[styles.countryHolder,{color: theme.colors.Text}]}>{ctry ? ctry.name : ''}</Text>
+                <Text 
+                    style={[styles.countryHolder,{color: theme.colors.Text, width: "100%"}]}
+                >{ctry ? ctry.name : ''}</Text>
             </View>
         </View>
     </View>
@@ -43,7 +45,7 @@ const styles = StyleSheet.create({
     countrySelect:{
         flexDirection: 'row',
         borderBottomWidth: 1,
-        width: 240,
+        width: "100%",
     },
     countryHolder:{
         fontSize: 16,

@@ -17,6 +17,7 @@ import { auth, db } from '../config/firebaseConfig';
 import { collection, getDoc, getDocs, query, where } from 'firebase/firestore';
 import { extractLastName } from '../constants/helpers';
 import PatientsScreen from '../screens/PatientsScreen';
+import { signOut } from 'firebase/auth';
 // import { useDispatch } from 'react-redux';
 
 const Tab = createBottomTabNavigator();
@@ -59,12 +60,20 @@ const HeaderRightIcons = () => {
   const dispatch = useDispatch()
   const [forceRerender, setForceRerender] = useState(false);
   const user = useSelector((state) => state.auth.user);
+  const [r, sR] = useState(0)
 
   const handleLogout = () => {
 
-    dispatch(logout())
-    console.log("user:", user)
-    setForceRerender(!forceRerender)
+    signOut(auth)
+      .then(() => {
+        console.log("User signed out successfully!");
+        sR(1)
+        // Handle successful logout (e.g., redirect to login page)
+      })
+      .catch((error) => {
+        console.error("Error signing out:", error);
+        // Handle sign-out errors
+      });
   }
 
   const { theme } = useTheme();
@@ -113,46 +122,9 @@ const HeaderRightIcons = () => {
 };
 
 
-const AppNavigator = () => {
+const AppNavigator = ({ type }) => {
   const { theme } = useTheme();
   const dispatch = useDispatch();
-
-  const getUser = async () => {
-    const user = auth.currentUser;
-    const uid = user.uid;
-
-    const docRef = collection(db, "users");
-    const q = query(docRef, where("id", "==", uid));
-
-    try {
-      const querySnapshot = await getDocs(q);
-      if (querySnapshot) {
-        const firstDoc = querySnapshot.docs[0];
-        const firstDocData = firstDoc ? firstDoc.data() : null;
-        console.log(firstDocData)
-
-        return firstDocData
-      } else {
-        console.log("Document does not exist")
-        return null
-      }
-    } catch (error) {
-      console.error(error)
-      return null
-    }
-  }
-
-  const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
-  const user = useSelector((state) => state.auth.user);
-  const [utype, setUtype] = useState(null);
-
-  useEffect(async () => {
-    const u = await getUser();
-    setUtype(u)
-    dispatch(getUserInfo(u))
-    console.log("utpyte: ", u)
-  }, [])
-  // const isDoctor = useSelector((state) => state.auth.isLoggedIn);
 
   if (!auth.currentUser) {
     return (
@@ -227,7 +199,8 @@ const AppNavigator = () => {
           statusBarStyle: "auto",
         }}
         />
-        {user && extractLastName(user.user.displayName) === "doctor" ?
+        {type === "doctor" ?
+          // {user && extractLastName(user.user.displayName) === "doctor" ?
           <Tab.Screen name="Patients" component={PatientsScreen}
             options={{
               headerShown: false,
@@ -252,7 +225,8 @@ const AppNavigator = () => {
               },
             }}
           />}
-        {user && extractLastName(user.user.displayName) === "doctor" ?
+        {type === "doctor" ?
+          // {user && extractLastName(user.user.displayName) === "doctor" ?
           <Tab.Screen name="Admin" component={PrinscribesScreen}
             options={({ route }) => ({
               tabBarBadge: 0,

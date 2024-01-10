@@ -3,6 +3,7 @@ import * as React from 'react';
 import { View, StyleSheet, Image, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { Card, Title, Paragraph } from 'react-native-paper';
 import { extractAllButLastName } from '../constants/helpers';
+import LoadingComponent from './LoadingComponent';
 
 const UserCard = ({ name, specialty, image, onPress }) => {
   return (
@@ -32,7 +33,7 @@ const DoctorList = ({ data }) => {
             onPress={() => navigation.navigate("chatPatient", { user })}
           />
         )
-      }) : <Text>Still loading data...</Text>}
+      }) : <LoadingComponent />}
     </View>
   )
   // </ScrollView>

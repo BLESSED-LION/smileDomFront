@@ -126,6 +126,9 @@ const SignUpScreen = () => {
                 <TextInput
                   placeholder='Enter phone number'
                   onChangeText={handleTextChange}
+                  style={{
+                    width: "100%"
+                  }}
                 />
               </View>
             </View>
@@ -192,6 +195,6 @@ const styles = StyleSheet.create({
   countrySelect: {
     flexDirection: 'row',
     borderBottomWidth: 1,
-    width: 240,
+    width: "100%",
   },
 })

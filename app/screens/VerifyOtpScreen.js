@@ -16,7 +16,8 @@ import { useTheme } from '../constants/theme';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useDispatch } from 'react-redux';
 import { getUserInfo, loginSuccess } from '../store/actions';
-import { getUser } from '../config/firebaseConfig';
+import { addUser, getUser } from '../config/firebaseConfig';
+import Toast from 'react-native-toast-message';
 
 const CELL_COUNT = 6;
 const RESEND_OTP_TIME_LIMIT = 90;
@@ -38,27 +39,32 @@ export default function () {
         setLoading(true);
         console.log(confirmationResult);
         if (confirmationResult) {
-          try {
-            const userCredential = await confirmationResult.confirm(code);
-            setLoading(true);
-            if (userCredential) {
-            //   const userDetails = await getUser();
-            //   console.log("user details: ", userDetails)
-            //   userCredential.additionalUserInfo.profile = userDetails;
-            // dispatch(getUserInfo(userDetails))
-              dispatch(loginSuccess(userCredential));
+            try {
+                const userCredential = await confirmationResult.confirm(code);
+                setLoading(true);
+                if (userCredential) {
+                    // const creds = { id: userCredential.uid, _id: userCredential.uid, phoneNumber: userCredential.phoneNumber, type: "patient" }
+                    // addUser(creds)
+                    dispatch(loginSuccess(userCredential));
+                }
+                setLoading(false)
+                Toast.show({
+                    text1: 'Phone verified, setting up...',
+                    type: 'success', // Can be 'success', 'info', 'warning', or 'error'
+                    position: 'top', // Can be 'top', 'center', or 'bottom'
+                    duration: 30000, // Duration in milliseconds
+                });
+            } catch (error) {
+                setVerificationWrong(true);
+            } finally {
+                setLoading(false);
             }
-          } catch (error) {
-            setVerificationWrong(true);
-          } finally {
-            setLoading(false);
-          }
         } else {
-          // Handle the case where confirmationResult is not available
-          setLoading(false);
+            // Handle the case where confirmationResult is not available
+            setLoading(false);
         }
-      };
-            
+    };
+
 
     //to start resent otp option
     const startResendOtpTimer = () => {
@@ -138,7 +144,7 @@ export default function () {
                         styles.intro,
                         { color: theme.colors.Primary }]}
                 >
-                    Verify your number            
+                    Verify your number
                 </Text>
             </View>
             {/* <Text style={styles.title}>Verify the Authorisation Code</Text> */}
@@ -185,7 +191,7 @@ export default function () {
                     disabled={loading}
                 />
             </View>
-            {verificationWrong && <Text style={{color:"red"}}>Wrong code</Text>}
+            {verificationWrong && <Text style={{ color: "red" }}>Wrong code</Text>}
         </SafeAreaView >
     );
 }

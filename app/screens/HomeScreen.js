@@ -16,13 +16,14 @@ import { extractLastName, generateRandomGravatarUrl, generateRandomString } from
 import Toast from 'react-native-toast-message'
 import { addDoc, collection, getFirestore, getDoc, where, query, getDocs } from "firebase/firestore";
 import { getUserInfo } from '../store/actions';
+import { StatusBar } from 'expo-status-bar';
 
 const HomeScreen = ({ navigation }) => {
   const { theme } = useTheme();
   const user = useSelector((state) => state.auth.user);
   const [userInfo, setUserInfo] = useState({});
-  const [visible, setVisible] = React.useState(user.user.displayName === undefined ? true : false);
-  const [v1, setV1] = React.useState(userInfo && userInfo.type != extractLastName(user.user.displayName) ? true : false);
+  const [visible, setVisible] = React.useState(typeof auth.currentUser.displayName != 'string' ? true : false);
+  const [v1, setV1] = React.useState(userInfo && userInfo.type != extractLastName(user && user.user.displayName) ? false : false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const showModal = () => setVisible(false);
@@ -85,12 +86,12 @@ const HomeScreen = ({ navigation }) => {
     updateProfile(auth.currentUser, {
       displayName: name + " " + additionalInfo.type, photoURL: generateRandomGravatarUrl(), email: email, additionalInfo: additionalInfo
     }).then(() => {
-      const creds = { id: user.user.uid, name: name, email: email, phoneNumber: user.user.phoneNumber, type: "patient" }
-      console.log(user.user.uid)
+      const creds = { id: user && user.user.uid, name: name, email: email, phoneNumber: user && user.user.phoneNumber, type: "patient" }
+      // console.log(user.user.uid)
       if (auth.currentUser && !u) {
         addUser(creds);
       } else {
-        setV1(false)
+        // setV1(false)
         Toast.show({
           text1: 'Profile already up to date',
           type: 'success', // Can be 'success', 'info', 'warning', or 'error'
@@ -110,7 +111,7 @@ const HomeScreen = ({ navigation }) => {
       setVisible(false)
     }).catch((error) => {
       Toast.show({
-        text1: 'An erro occured while updating',
+        text1: 'An error occured while updating',
         // text2: 'Additional text can go here',
         type: 'error', // Can be 'success', 'info', 'warning', or 'error'
         position: 'top', // Can be 'top', 'center', or 'bottom'
@@ -149,7 +150,7 @@ const HomeScreen = ({ navigation }) => {
           contentContainerStyle={{ paddingBottom: 100 }}
         />
         <Modal
-          visible={visible || v1}
+          visible={visible}
           onDismiss={hideModal}
           contentContainerStyle={styles.modal}
         >
@@ -164,6 +165,7 @@ const HomeScreen = ({ navigation }) => {
           />
         </Modal>
       </Portal>
+      <StatusBar backgroundColor={'#BFD101'}/>
     </PaperProvider>
   )
 }

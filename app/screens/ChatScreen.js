@@ -5,11 +5,14 @@ import { FontAwesome } from '@expo/vector-icons';
 import { useTheme } from '../constants/theme';
 import { renderInputToolbar, renderActions, renderComposer, renderSend } from '../components/InputToolbar';
 import { StatusBar } from 'expo-status-bar';
+import { useNavigation } from '@react-navigation/native';
 
-const ChatScreen = () => {
+const ChatScreen = ({route}) => {
     const [messages, setMessages] = useState([]);
     const [text, setText] = useState('');
     const { theme } = useTheme();
+    const {patient, messages : msgs} = route.params;
+    const navigation = useNavigation()
 
     const onSend = (newMessages = []) => {
         setMessages(previousMessages => GiftedChat.append(previousMessages, newMessages));
@@ -19,28 +22,28 @@ const ChatScreen = () => {
         <View style={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity>
-                    <Image source={require('../../assets/doctors/1.png')} style={styles.profileImage} />
+                    <Image source={patient.profileImage} style={styles.profileImage} />
                 </TouchableOpacity>
                 <View style={styles.userInfo}>
                     <TouchableOpacity style={styles.userName}>
-                        <Text style={{ fontWeight: "500" }}>User 1</Text>
+                        <Text style={{ fontWeight: "500" }}>{patient.name}</Text>
                         <Text>Online</Text>
                     </TouchableOpacity>
                     <View style={styles.iconContainer}>
                         <TouchableOpacity style={styles.tico}>
                             <FontAwesome name="search" size={24} color={theme.colors.yellow} />
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.tico}>
+                        <TouchableOpacity style={styles.tico} onPress={() => navigation.navigate("callScreen")}>
                             <FontAwesome name="video-camera" size={24} color={theme.colors.yellow} />
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.tico}>
+                        <TouchableOpacity style={styles.tico} onPress={() => navigation.navigate("previousConsult")}>
                             <FontAwesome name="heartbeat" size={24} color={theme.colors.yellow} />
                         </TouchableOpacity>
                     </View>
                 </View>
             </View>
             <GiftedChat
-                messages={messages}
+                messages={msgs}
                 onSend={newMessages => onSend(newMessages)}
                 text={text}
                 onInputTextChanged={setText}
@@ -54,7 +57,7 @@ const ChatScreen = () => {
                     _id: 1,
                 }}
             />
-            <StatusBar backgroundColor="#0D0B31" barStyle="light-content" />
+            <StatusBar backgroundColor={'#BFD101'}/>
         </View>
     );
 };
