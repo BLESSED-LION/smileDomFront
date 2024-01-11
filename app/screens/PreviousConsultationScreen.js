@@ -4,7 +4,7 @@ import { Ionicons, Fontisto } from '@expo/vector-icons';
 import { useTheme } from '../constants/theme';
 import { useNavigation } from '@react-navigation/native';
 
-const PreviousConsultationsScreen = () => {
+const PreviousConsultationsScreen = ({route}) => {
     const [consultations, setConsultations] = useState([
         {
             name: "01 Consultation for gastric",
@@ -21,6 +21,7 @@ const PreviousConsultationsScreen = () => {
     ]);
     const theme = useTheme()
     const navigation = useNavigation()
+    const {patient, doctor} = route.params;
 
     const renderConsultationItem = ({ item }) => (
         <TouchableOpacity style={styles.consultationCard}>
@@ -40,19 +41,22 @@ const PreviousConsultationsScreen = () => {
                     justifyContent: "center",
                     alignItems: "center"
                 }}>
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={() => navigation.goBack()}>
                         <Ionicons name="arrow-back" size={20} color="black" />
                     </TouchableOpacity>
-                    <Image source={require("../../assets/doctors/2.png")} style={styles.profilePicture} />
+                    <Image source={patient.profileImage} style={styles.profilePicture} />
                 </TouchableOpacity>
-                <Text style={styles.patientName}>Adeline</Text>
+                <Text style={styles.patientName}>{patient.patient.name}</Text>
             </View>
             <FlatList
                 data={consultations}
                 renderItem={renderConsultationItem}
                 keyExtractor={(item) => item.id}
             />
-            <TouchableOpacity style={[styles.consultationCard, {backgroundColor: '#BFD101'}]} onPress={() => navigation.navigate("consultForm")}>
+            <TouchableOpacity style={[styles.consultationCard, {backgroundColor: '#BFD101'}]} onPress={() => navigation.navigate("consultForm", {
+                patient,
+                doctor
+            })}>
                 <Ionicons name="medkit" style={[styles.consultationIcon]} size={40} color={'#fff'} />
                 <View>
                     <Text style={[styles.consultationName, {color: "#fff"}]}>New Consultation</Text>

@@ -5,6 +5,7 @@ import { Image, TouchableOpacity } from 'react-native';
 import { InputToolbar, Actions, Composer, Send } from 'react-native-gifted-chat';
 import { FontAwesome } from '@expo/vector-icons';
 import { useTheme } from '../constants/theme';
+import * as DocumentPicker from 'expo-document-picker';
 
 export const renderInputToolbar = (props) => (
     <InputToolbar
@@ -18,34 +19,44 @@ export const renderInputToolbar = (props) => (
     />
 );
 
-export const renderActions = (props) => (
-    <Actions
-        {...props}
-        containerStyle={{
-            width: 44,
-            height: 44,
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginLeft: 4,
-            marginRight: 4,
-            marginBottom: 0,
-        }}
-        icon={() => (
-            <TouchableOpacity>
-                <FontAwesome name="paperclip" size={24} color="black" />
-            </TouchableOpacity>
-        )}
-        options={{
-            'Choose From Library': () => {
-                console.log('Choose From Library');
-            },
-            Cancel: () => {
-                console.log('Cancel');
-            },
-        }}
-        optionTintColor="#222B45"
-    />
-);
+export const renderActions = (props) => {
+    const pickFile = async () => {
+        let result = await DocumentPicker.getDocumentAsync({ type: '*/*' });
+        if (!result.cancelled) {
+          const fileUri = result.uri;
+          // Handle file upload
+        }
+      };
+
+    return (
+        <Actions
+            {...props}
+            containerStyle={{
+                width: 44,
+                height: 44,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginLeft: 4,
+                marginRight: 4,
+                marginBottom: 0,
+            }}
+            icon={() => (
+                <TouchableOpacity>
+                    <FontAwesome name="paperclip" size={24} color="black" />
+                </TouchableOpacity>
+            )}
+            options={{
+                'Choose From Library': () => {
+                    console.log('Choose From Library');
+                },
+                Cancel: () => {
+                    console.log('Cancel');
+                },
+            }}
+            optionTintColor="#222B45"
+        />
+    );
+}
 
 export const renderComposer = (props) => (
 
@@ -77,7 +88,7 @@ export const renderSend = (props) => (
         }}
     >
         {/* <TouchableOpacity> */}
-            <FontAwesome name="send" size={24} color="black" />
+        <FontAwesome name="send" size={24} color="black" />
         {/* </TouchableOpacity> */}
     </Send>
 );

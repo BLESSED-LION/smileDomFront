@@ -1,4 +1,4 @@
-import { TextInput, StyleSheet, Text, View, Image, TouchableOpacity, ScrollView } from 'react-native'
+import { StyleSheet, Text, View, Image, TouchableOpacity, ScrollView, TextInput } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { useTheme } from '../constants/theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -8,7 +8,7 @@ import { auth, db } from '../config/firebaseConfig';
 import { collection, getDocs, limit, orderBy, query, where } from 'firebase/firestore';
 import { formatTimestampLikeWhatsApp } from '../constants/helpers';
 
-const PatientsScreen = () => {
+const PatientsScreen = ({route}) => {
   const { theme } = useTheme();
   const navigation = useNavigation()
   const [doctor, setDoctor] = useState({})
@@ -33,7 +33,7 @@ const PatientsScreen = () => {
           if (snapshot.docs.length > 0) {
             const userDoc = snapshot.docs[0];
             const userData = userDoc.data();
-            setDoctor({...userData, __id: userDoc.id})
+            setDoctor({...userData, __id: userDoc.id, _id: userDoc.data().id})
             console.log("Doctor data:", userData);
           } else {
             console.log("User not found");
@@ -66,17 +66,24 @@ const PatientsScreen = () => {
           id: doc.id,
         }));
         console.log("Messages: ", messages)
-        setMsgs(messages)
+        const filteredMessages = messages.map((obj) => ({
+          ...obj,
+          createdAt: obj.createdAt.toDate(),
+          text: obj.mesage
+        }));
+        console.log("Filtered Messages: ", filteredMessages)
+        setMsgs(filteredMessages)
         console.log("messages: ", msgs)
 
         patientsAndMessages.push({
           patientId: patientId,
           name: patientName,
           profileImage: patientPhoto,
-          messages: messages,
-          lastMessage: messages[0] ? messages[0].mesage : "No messages",
+          messages: filteredMessages,
+          lastMessage: filteredMessages[0] ? filteredMessages[0].mesage : "No messages",
           unreadMessages: 1,
-          lastMessageTime: messages[0] ? formatTimestampLikeWhatsApp(messages[0].createdAt) : "Last time"
+          lastMessageTime: filteredMessages[0] ? "Seen" : "Last time",
+          patient: {...patientSnapshot.docs[0].data(), _id: patientSnapshot.docs[0].data().id },
         });
         setPatients(patientsAndMessages)
       }
@@ -159,7 +166,8 @@ const PatientsScreen = () => {
         {patients.map((user, index) => (
           <TouchableOpacity style={styles.userContainer} key={index} onPress={() => navigation.navigate("chatDoctor", {
             patient: user,
-            messages: msgs
+            messages: msgs,
+            doctor: doctor
           })}>
             <Image source={user.profileImage} style={styles.profileImage} />
             <View style={styles.userInfo}>

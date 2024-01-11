@@ -12,11 +12,12 @@ const Stack = createStackNavigator();
 const PatientNavigator = () => {
     const { theme } = useTheme();
   return (
-    <Stack.Navigator>
-      <Stack.Screen name="chatDoctor" component={ChatScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="chatPatient" component={PatientChatScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="conResult" component={ConsultationResultScreen} options={{ headerShown: false }} />
-    </Stack.Navigator>
+    <></>
+    // <Stack.Navigator>
+    //   <Stack.Screen name="chatDoctor" component={ChatScreen} options={{ headerShown: false }} />
+    //   <Stack.Screen name="chatPatient" component={PatientChatScreen} options={{ headerShown: false }} />
+    //   <Stack.Screen name="conResult" component={ConsultationResultScreen} options={{ headerShown: false }} />
+    // </Stack.Navigator>
   )
 }
 

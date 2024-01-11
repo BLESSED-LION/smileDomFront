@@ -23,6 +23,8 @@ const PatientChatScreen = (route) => {
     const navigation = useNavigation()
     const messagesCollectionRef = collection(db, 'messages');
     const u = useSelector((state) => state.user.user);
+    const u1 = {...u._j, _id: u._j.id}
+    console.log("The modified user is: ", u1)
 
     useEffect(() => {
         const q = query(messagesCollectionRef, orderBy('createdAt', 'desc'), where('senderId', 'in', [auth.currentUser.uid, user.id]),
@@ -38,7 +40,7 @@ const PatientChatScreen = (route) => {
                     text: doc.data().mesage,
                     senderId: doc.data().senderId,
                     receiverId: doc.data().receiverId,
-                    user: u
+                    user: auth.currentUser.uid === doc.data().senderId ? u1 : user
                 }))
             );
             console.log(messages)
@@ -63,7 +65,7 @@ const PatientChatScreen = (route) => {
                 createdAt,
                 mesage: text,
                 senderId: senderId,
-                receiverId,
+                receiverId: user.id,
             }).then(() => {
                 updateDoc(uRef, {
                     patients: arrayUnion(newData)
@@ -110,6 +112,7 @@ const PatientChatScreen = (route) => {
                     </View>
                 </View>
             </View>
+            <View style={{flex:1, backgroundColor:"#fff"}}>
             <GiftedChat
                 messages={messages}
                 onSend={newMessages => onSend(newMessages)}
@@ -121,8 +124,9 @@ const PatientChatScreen = (route) => {
                 renderActions={renderActions}
                 renderComposer={renderComposer}
                 renderSend={renderSend}
-                user={auth.currentUser}
+                user={u1}
             />
+            </View>
         </View>
     );
 };

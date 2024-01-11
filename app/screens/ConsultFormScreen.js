@@ -1,17 +1,43 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, StyleSheet, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, ScrollView } from 'react-native';
 import { Ionicons, Fontisto } from '@expo/vector-icons';
+import { TextInput, IconButton } from 'react-native-paper';
 
-const ConsultationForm = () => {
-    const [activeTab, setActiveTab] = useState('Complains');
+const ConsultationForm = ({ navigation, route }) => {
+    const [activeTab, setActiveTab] = useState(0);
+    const [inputFields, setInputFields] = useState([[{}], [{}], [{}], [{}], [{}], [{}], [{}], [{}]]);
+    const [fieldValues, setFieldValues] = useState(
+        inputFields[activeTab].map((field) => ({ ...field, value: '' }))
+    );
+    const [formData, setFormData] = useState({});
     const [complaint, setComplaint] = useState('');
+    const { patient, doctor } = route.params;
 
     const handleTabPress = (tab) => {
         setActiveTab(tab);
     };
 
     const handleSubmit = () => {
-        // Submit form data
+        const data = inputFields[activeTab].map((field, index) => ({
+          [field.name]: fieldValues[index] && fieldValues[index].value,
+        }));
+        setFormData(data); // Store in formData for potential display or further actions
+      
+        console.log(formData)
+      };
+      
+
+    const handleAddField = () => {
+        console.log("Adding field...")
+        const newFields = [...inputFields];
+        newFields[activeTab].push({ placeholder: "Enter text" }); // Add a new empty object for the field
+        setInputFields(newFields);
+    };
+
+    const handleDeleteField = (fieldIndex) => {
+        const newFields = [...inputFields];
+        newFields[activeTab].splice(fieldIndex, 1);
+        setInputFields(newFields);
     };
 
     return (
@@ -22,149 +48,157 @@ const ConsultationForm = () => {
                     justifyContent: "center",
                     alignItems: "center"
                 }}>
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={() => navigation.goBack()}>
                         <Ionicons name="arrow-back" size={20} color="black" />
                     </TouchableOpacity>
                     <Image source={require("../../assets/doctors/2.png")} style={styles.profilePicture} />
                 </TouchableOpacity>
-                <Text style={styles.patientName}>01 Consultation for gastric</Text>
+                <Text style={styles.patientName}>Consultation by {doctor.name}</Text>
             </View>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 10, flexWrap: "wrap" }}>
-                <TouchableOpacity onPress={() => handleTabPress('Complains')}>
-                    <Text style={[{ 
-                        color: activeTab === 'Complains' ? '#5fbae8' : '#fff', 
-                        backgroundColor: activeTab === 'Complains' ? '#fff' : '#5fbae8',
+                <TouchableOpacity onPress={() => handleTabPress(0)}>
+                    <Text style={[{
+                        color: activeTab === 0 ? '#5fbae8' : '#fff',
+                        backgroundColor: activeTab === 0 ? '#fff' : '#5fbae8',
                         padding: 12,
                         borderRadius: 15,
                         fontWeight: "700",
                         fontSize: 12
-                        }]}>Complains</Text>
+                    }]}>Complains</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleTabPress('Medical History')}>
-                    <Text style={[{ 
-                        color: activeTab === 'Medical History' ? '#5fbae8' : '#fff', 
-                        backgroundColor: activeTab === 'Medical History' ? '#fff' : '#5fbae8',
+                <TouchableOpacity onPress={() => handleTabPress(1)}>
+                    <Text style={[{
+                        color: activeTab === 1 ? '#5fbae8' : '#fff',
+                        backgroundColor: activeTab === 1 ? '#fff' : '#5fbae8',
                         padding: 12,
                         borderRadius: 15,
                         fontWeight: "700",
                         fontSize: 12
-                        }]}>Medical History</Text>
+                    }]}>Medical History</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleTabPress('Examinations')}>
-                    <Text style={[{ 
-                        color: activeTab === 'Examinations' ? '#5fbae8' : '#fff', 
-                        backgroundColor: activeTab === 'Examinations' ? '#fff' : '#5fbae8',
+                <TouchableOpacity onPress={() => handleTabPress(2)}>
+                    <Text style={[{
+                        color: activeTab === 2 ? '#5fbae8' : '#fff',
+                        backgroundColor: activeTab === 2 ? '#fff' : '#5fbae8',
                         padding: 12,
                         borderRadius: 15,
                         fontWeight: "700",
                         fontSize: 12
-                        }]}>Examinations</Text>
+                    }]}>Examinations</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleTabPress('Diagnosis')}>
-                    <Text style={[{ 
-                        color: activeTab === 'Diagnosis' ? '#5fbae8' : '#fff', 
-                        backgroundColor: activeTab === 'Diagnosis' ? '#fff' : '#5fbae8',
+                <TouchableOpacity onPress={() => handleTabPress(3)}>
+                    <Text style={[{
+                        color: activeTab === 3 ? '#5fbae8' : '#fff',
+                        backgroundColor: activeTab === 3 ? '#fff' : '#5fbae8',
                         padding: 12,
                         borderRadius: 15,
                         fontWeight: "700",
                         fontSize: 12,
                         marginTop: 10
-                        }]}>Diagnosis</Text>
+                    }]}>Diagnosis</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleTabPress('Work Ups')}>
-                    <Text style={[{ 
-                        color: activeTab === 'Work Ups' ? '#5fbae8' : '#fff', 
-                        backgroundColor: activeTab === 'Work Ups' ? '#fff' : '#5fbae8',
+                <TouchableOpacity onPress={() => handleTabPress(4)}>
+                    <Text style={[{
+                        color: activeTab === 4 ? '#5fbae8' : '#fff',
+                        backgroundColor: activeTab === 4 ? '#fff' : '#5fbae8',
                         padding: 12,
                         borderRadius: 15,
                         fontWeight: "700",
                         fontSize: 12,
                         marginTop: 10
-                        }]}>Work Ups</Text>
+                    }]}>Work Ups</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleTabPress('Treatment')}>
-                    <Text style={[{ 
-                        color: activeTab === 'Treatment' ? '#5fbae8' : '#fff', 
-                        backgroundColor: activeTab === 'Treatment' ? '#fff' : '#5fbae8',
+                <TouchableOpacity onPress={() => handleTabPress(5)}>
+                    <Text style={[{
+                        color: activeTab === 5 ? '#5fbae8' : '#fff',
+                        backgroundColor: activeTab === 5 ? '#fff' : '#5fbae8',
                         padding: 12,
                         borderRadius: 15,
                         fontWeight: "700",
                         fontSize: 12,
                         marginTop: 10
-                        }]}>Treatment</Text>
+                    }]}>Treatment</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleTabPress('Appointment')}>
-                    <Text style={[{ 
-                        color: activeTab === 'Appointment' ? '#5fbae8' : '#fff', 
-                        backgroundColor: activeTab === 'Appointment' ? '#fff' : '#5fbae8',
+                <TouchableOpacity onPress={() => handleTabPress(6)}>
+                    <Text style={[{
+                        color: activeTab === 6 ? '#5fbae8' : '#fff',
+                        backgroundColor: activeTab === 6 ? '#fff' : '#5fbae8',
                         padding: 12,
                         borderRadius: 15,
                         fontWeight: "700",
                         fontSize: 12,
                         marginTop: 10
-                        }]}>Appointment</Text>
+                    }]}>Appointment</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleTabPress('Signature')}>
-                    <Text style={[{ 
-                        color: activeTab === 'Signature' ? '#5fbae8' : '#fff', 
-                        backgroundColor: activeTab === 'Signature' ? '#fff' : '#5fbae8',
+                <TouchableOpacity onPress={() => handleTabPress(7)}>
+                    <Text style={[{
+                        color: activeTab === 7 ? '#5fbae8' : '#fff',
+                        backgroundColor: activeTab === 7 ? '#fff' : '#5fbae8',
                         padding: 12,
                         borderRadius: 15,
                         fontWeight: "700",
                         fontSize: 12,
                         marginTop: 10
-                        }]}>Signature</Text>
+                    }]}>Signature</Text>
                 </TouchableOpacity>
                 <TouchableOpacity>
-                    <Text style={[{ 
-                        color: activeTab === 'Report PDF' ? '#e00000' : '#fff', 
+                    <Text style={[{
+                        color: activeTab === 'Report PDF' ? '#e00000' : '#fff',
                         backgroundColor: activeTab === 'Report PDF' ? '#5fbae8' : '#e00000',
                         padding: 12,
                         borderRadius: 15,
                         fontWeight: "700",
                         fontSize: 12,
                         marginTop: 10
-                        }]}>Report PDF</Text>
+                    }]}>Report PDF</Text>
                 </TouchableOpacity>
-                <TouchableOpacity>
-                    <Text style={[{ 
-                        color: activeTab === 'New Field' ? '#e00000' : '#fff', 
+                <TouchableOpacity onPress={handleAddField}>
+                    <Text style={[{
+                        color: activeTab === 'New Field' ? '#e00000' : '#fff',
                         backgroundColor: activeTab === 'New Field' ? '#BFD101' : '#BFD101',
                         padding: 12,
                         borderRadius: 15,
                         fontWeight: "700",
                         fontSize: 12,
                         marginTop: 10
-                        }]}>+ New Field</Text>
+                    }]}>+ New Field</Text>
                 </TouchableOpacity>
             </View>
-            <View style={{ padding: 10, flex:1 }}>
-                {activeTab === 'Complains' && (
-                    <View>
-                        <Text style={{ marginBottom: 10, marginTop: 20, fontWeight: 700, fontSize: 18 }}>Complain</Text>
-                        <TextInput 
-                            value={complaint} 
-                            onChangeText={setComplaint} 
-                            style={{ 
-                                borderWidth: 1, 
-                                borderColor: 'gray', 
-                                padding: 10,
-                                borderTopWidth: 0,
-                                borderLeftWidth: 0,
-                                borderRightWidth: 0,
-                            }}
-                            placeholder='Enter complain'
-                            />
-                    </View>
-                )}
-                {/* Add other forms here */}
-            </View>
-            <TouchableOpacity onPress={handleSubmit} style={{ 
-                backgroundColor: '#5fbae8', 
-                padding: 10, 
+            <ScrollView style={{ padding: 10, flex: 1, backgroundColor: "#fff" }}>
+                {inputFields[activeTab] && inputFields[activeTab].map((field, index) => (
+                    <TextInput
+                        key={index}
+                        placeholder={"Enter text"}
+                        style={{
+                            borderWidth: 1,
+                            borderColor: 'gray',
+                            padding: 10,
+                            borderTopWidth: 0,
+                            borderLeftWidth: 0,
+                            borderRightWidth: 0,
+                        }}
+                        right={
+                            <TextInput.Icon
+                                name="close"
+                                onPress={() => handleDeleteField(index)}
+                            />}
+                        value={fieldValues[index] && fieldValues[index].value}
+                        onChangeText={(newValue) =>
+                            setFieldValues((prevValues) =>
+                                prevValues.map((field, fieldIndex) =>
+                                    fieldIndex === index ? { ...field, value: newValue } : field
+                                )
+                            )
+                        }
+                    />
+                ))}
+                <TouchableOpacity onPress={handleSubmit} style={{
+                backgroundColor: '#5fbae8',
+                padding: 10,
             }}>
-                <Text style={{ textAlign: 'center', backgroundColor:"#5fbae8", color:"#fff" }}>SUBMIT FORM</Text>
+                <Text style={{ textAlign: 'center', backgroundColor: "#5fbae8", color: "#fff" }}>SUBMIT FORM</Text>
             </TouchableOpacity>
+            </ScrollView>
         </View>
     );
 };

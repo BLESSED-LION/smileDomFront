@@ -9,6 +9,7 @@ import { collection, getDoc, getDocs, query, where } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from './app/config/firebaseConfig';
 import { StatusBar } from 'expo-status-bar';
+// import { TwilioVideo } from 'react-native-twilio-video-webrtc';
 
 export default function App() {
   const [userRole, setUserRole] = useState('');
