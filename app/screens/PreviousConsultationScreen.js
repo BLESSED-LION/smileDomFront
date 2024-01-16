@@ -3,28 +3,51 @@ import { SafeAreaView, TouchableOpacity, Image, View, Text, FlatList, StyleSheet
 import { Ionicons, Fontisto } from '@expo/vector-icons';
 import { useTheme } from '../constants/theme';
 import { useNavigation } from '@react-navigation/native';
+import { collection, query, orderBy, where, onSnapshot } from "firebase/firestore";
+import { auth, db } from '../config/firebaseConfig';
+import { ActivityIndicator } from 'react-native-paper';
 
-const PreviousConsultationsScreen = ({route}) => {
-    const [consultations, setConsultations] = useState([
-        {
-            name: "01 Consultation for gastric",
-            date: "01/02/2023"
-        },
-        {
-            name: "02 Consultation for fever",
-            date: "04/02/2023"
-        },
-        {
-            name: "03 Consultation for malaria",
-            date: "29/04/2023"
-        }
-    ]);
-    const theme = useTheme()
+
+const PreviousConsultationsScreen = ({ route }) => {
+    const [consultations, setConsultations] = useState();
+    const [data, setData] = useState([])
+    const [loading, setLoading] = useState(true)
+    const appointmentsCollectionRef = collection(db, "appointments");
     const navigation = useNavigation()
-    const {patient, doctor} = route.params;
+    const { patient, doctor } = route.params;
+    const pid = !patient.patient ? auth.currentUser.uid : patient.patient.id;
+    const name = !patient.patient ? auth.currentUser.displayName : patient.patient.name;
+
+    useEffect(async () => {
+        const q = query(appointmentsCollectionRef,
+            where('patient', '==', pid),
+        );
+        const unsubscribe = onSnapshot(q, querySnapshot => {
+            const consults = querySnapshot.docs.map((doc) => doc.data())
+            console.log("snapshot: ", consults)
+            setConsultations(
+                querySnapshot.docs.map(doc => ({
+                    _id: doc.data().id,
+                    date: doc.data().appointment,
+                    name: `Consultation for ${doc.data().complains[0]}`,
+                }))
+            );
+            setData(consults);
+            setLoading(false)
+        });
+
+        return () => unsubscribe();
+    }, []);
 
     const renderConsultationItem = ({ item }) => (
-        <TouchableOpacity style={styles.consultationCard}>
+        <TouchableOpacity 
+            style={styles.consultationCard} 
+            onPress={() => navigation.navigate("conResult", {
+                data,
+                doctor,
+                patient
+            })}
+        >
             <Ionicons name="medkit" style={styles.consultationIcon} size={40} color={'#2FA8E5'} />
             <View>
                 <Text style={styles.consultationName}>{item.name}</Text>
@@ -44,24 +67,26 @@ const PreviousConsultationsScreen = ({route}) => {
                     <TouchableOpacity onPress={() => navigation.goBack()}>
                         <Ionicons name="arrow-back" size={20} color="black" />
                     </TouchableOpacity>
-                    <Image source={patient.profileImage} style={styles.profilePicture} />
+                    <Image source={patient.profileImage ? patient.profileImage : require("../../assets/doctors/1.png")} style={styles.profilePicture} />
                 </TouchableOpacity>
-                <Text style={styles.patientName}>{patient.patient.name}</Text>
+                <Text style={styles.patientName}>{patient.patient ? patient.patient.name : name}</Text>
             </View>
             <FlatList
                 data={consultations}
                 renderItem={renderConsultationItem}
                 keyExtractor={(item) => item.id}
             />
-            <TouchableOpacity style={[styles.consultationCard, {backgroundColor: '#BFD101'}]} onPress={() => navigation.navigate("consultForm", {
+            {loading && <ActivityIndicator style={{marginTop: 30}} />}
+            {patient.patient &&
+            <TouchableOpacity style={[styles.consultationCard, { backgroundColor: '#BFD101' }]} onPress={() => navigation.navigate("consultForm", {
                 patient,
                 doctor
             })}>
                 <Ionicons name="medkit" style={[styles.consultationIcon]} size={40} color={'#fff'} />
                 <View>
-                    <Text style={[styles.consultationName, {color: "#fff"}]}>New Consultation</Text>
+                    <Text style={[styles.consultationName, { color: "#fff" }]}>New Consultation</Text>
                 </View>
-            </TouchableOpacity>
+            </TouchableOpacity>}
         </SafeAreaView>
     );
 };

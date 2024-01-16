@@ -1,6 +1,6 @@
-import { FlatList, StyleSheet } from 'react-native'
+import { FlatList, StyleSheet, View } from 'react-native'
 import { Text } from 'react-native';
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import dummyData from '../constants/dummyData';
 import { useTheme } from '../constants/theme';
 import { DoctorsNearYou, Post } from '../components';
@@ -17,6 +17,10 @@ import Toast from 'react-native-toast-message'
 import { addDoc, collection, getFirestore, getDoc, where, query, getDocs } from "firebase/firestore";
 import { getUserInfo } from '../store/actions';
 import { StatusBar } from 'expo-status-bar';
+import {
+  BottomSheetModal,
+  BottomSheetModalProvider,
+} from '@gorhom/bottom-sheet';
 
 const HomeScreen = ({ navigation }) => {
   const { theme } = useTheme();
@@ -29,6 +33,15 @@ const HomeScreen = ({ navigation }) => {
   const showModal = () => setVisible(false);
   const hideModal = () => setVisible(false);
   const dispatch = useDispatch()
+  const bottomSheetModalRef = useRef(null)
+  const snapPoints = useMemo(() => ['25%', '50%'], []);
+
+  const handlePresentModalPress = useCallback(() => {
+    bottomSheetModalRef.current?.present()
+  }, [])
+  const handleSheetChanges = useCallback(index => {
+    console.log("handleSheetChanges", index)
+  }, [])
 
   const getUser = async () => {
     const user = auth.currentUser;
@@ -74,7 +87,6 @@ const HomeScreen = ({ navigation }) => {
     const dateB = new Date(postB.publishDate);
     return dateB - dateA; // Sort by descending order (most recent first)
   });
-  // const containerStyle = {backgroundColor: 'white', padding: 20};
 
   const handlePress = async () => {
     const u = await getUser()
@@ -122,50 +134,63 @@ const HomeScreen = ({ navigation }) => {
 
   return (
     <PaperProvider>
-      <Portal>
-        <FlatList
-          ListHeaderComponent={<DoctorsNearYou
-            onPress={(doctorInfo) => {
-              navigation.navigate('doctor', { doctorInfo });
+      <BottomSheetModalProvider>
+        <Portal>
+          <FlatList
+            ListHeaderComponent={<DoctorsNearYou
+              onPress={(doctorInfo) => {
+                navigation.navigate('doctor', { doctorInfo });
+              }}
+            />}
+            data={sortedPosts}
+            keyExtractor={(item) => item.postId.toString()}
+            renderItem={({ item }) => (
+              <Post
+                DoctorName={item?.DoctorName || "No Name"} // Update DoctorName based on available data
+                PostPublishDate={item.publishDate}
+                DoctorPhoto={item.DoctorPhoto || require('../../assets/SmileDom_1.png')} // Use default photo if not available
+                postImage={item.postImage}
+                likes={item.likes.toString()}
+                comments={item.comments.toString()}
+                onPress={() => navigation.navigate('doctor', { doctorInfo: item })}
+                commentPress={handlePresentModalPress}
+              />
+            )}
+            style={{
+              flex: 1,
+              backgroundColor: theme.colors.Background,
+              paddingBottom: 500,
             }}
-          />}
-          data={sortedPosts}
-          keyExtractor={(item) => item.postId.toString()}
-          renderItem={({ item }) => (
-            <Post
-              DoctorName={item?.DoctorName || "No Name"} // Update DoctorName based on available data
-              PostPublishDate={item.publishDate}
-              DoctorPhoto={item.DoctorPhoto || require('../../assets/SmileDom_1.png')} // Use default photo if not available
-              postImage={item.postImage}
-              likes={item.likes.toString()}
-              comments={item.comments.toString()}
-              onPress={() => navigation.navigate('doctor', { doctorInfo: item })}
-            />
-          )}
-          style={{
-            flex: 1,
-            backgroundColor: theme.colors.Background,
-            paddingBottom: 500,
-          }}
-          contentContainerStyle={{ paddingBottom: 100 }}
-        />
-        <Modal
-          visible={visible}
-          onDismiss={hideModal}
-          contentContainerStyle={styles.modal}
-        >
-          <Text>Almost done! Please for the info below</Text>
-          <InputLogin ititle="Name" handleInput={setName} />
-          <InputLogin ititle="Email" handleInput={setEmail} />
-          <Button
-            title={"Submit"}
-            onPress={handlePress}
-            textColor={theme.colors.White}
-            buttonColor={theme.colors.Primary}
+            contentContainerStyle={{ paddingBottom: 100 }}
           />
-        </Modal>
-      </Portal>
-      <StatusBar backgroundColor={'#BFD101'}/>
+          <Modal
+            visible={visible}
+            onDismiss={hideModal}
+            contentContainerStyle={styles.modal}
+          >
+            <Text>Almost done! Please for the info below</Text>
+            <InputLogin ititle="Name" handleInput={setName} />
+            <InputLogin ititle="Email" handleInput={setEmail} />
+            <Button
+              title={"Submit"}
+              onPress={handlePress}
+              textColor={theme.colors.White}
+              buttonColor={theme.colors.Primary}
+            />
+          </Modal>
+        </Portal>
+        <StatusBar backgroundColor={'#BFD101'} />
+        <BottomSheetModal
+          ref={bottomSheetModalRef}
+          index={1}
+          snapPoints={snapPoints}
+          onChange={handleSheetChanges}
+        >
+          <View style={styles.contentContainer}>
+            <Text>Awesome 🎉</Text>
+          </View>
+        </BottomSheetModal>
+      </BottomSheetModalProvider>
     </PaperProvider>
   )
 }

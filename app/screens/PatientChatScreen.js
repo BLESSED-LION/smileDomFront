@@ -9,10 +9,12 @@ import { auth, db } from '../config/firebaseConfig';
 import { doc, addDoc, collection, orderBy, query, where, onSnapshot, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { useSelector } from 'react-redux';
 import Toast from 'react-native-toast-message';
+import { ActivityIndicator } from 'react-native-paper';
 
 const PatientChatScreen = (route) => {
     const [messages, setMessages] = useState([]);
     const [text, setText] = useState('');
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const { theme } = useTheme();
     console.log(route)
@@ -23,12 +25,18 @@ const PatientChatScreen = (route) => {
     const navigation = useNavigation()
     const messagesCollectionRef = collection(db, 'messages');
     const u = useSelector((state) => state.user.user);
-    const u1 = {...u._j, _id: u._j.id}
+    const u1 = u ? {...u._j, _id: u._j.id} : {}
     console.log("The modified user is: ", u1)
+    console.log("The doctor's id is: ", user.id)
 
     useEffect(() => {
-        const q = query(messagesCollectionRef, orderBy('createdAt', 'desc'), where('senderId', 'in', [auth.currentUser.uid, user.id]),
-            where('receiverId', 'in', [auth.currentUser.uid, user.id]),);
+        const chatId = auth.currentUser.uid + user.id
+        const q = query(messagesCollectionRef, 
+            orderBy('createdAt', 'desc'), 
+            where('senderId', 'in', [auth.currentUser.uid, user.id]),
+            where('receiverId', 'in', [auth.currentUser.uid, user.id]),
+            where('chatId', '==', chatId)
+            )
 
         const unsubscribe = onSnapshot(q, querySnapshot => {
             const msgs = querySnapshot.docs.map((doc) => doc.data())
@@ -44,6 +52,7 @@ const PatientChatScreen = (route) => {
                 }))
             );
             console.log(messages)
+            setLoading(false)
         });
 
         return () => unsubscribe();
@@ -52,6 +61,7 @@ const PatientChatScreen = (route) => {
     const onSend = useCallback((messages = []) => {
         const uRef = doc(db, "users", route.route.params.user.__id);
         const newData = auth.currentUser.uid
+        const chatId = auth.currentUser.uid + route.route.params.user.id
 
         setMessages(previousMessages =>
             GiftedChat.append(previousMessages, messages)
@@ -66,6 +76,7 @@ const PatientChatScreen = (route) => {
                 mesage: text,
                 senderId: senderId,
                 receiverId: user.id,
+                chatId: chatId
             }).then(() => {
                 updateDoc(uRef, {
                     patients: arrayUnion(newData)
@@ -103,16 +114,20 @@ const PatientChatScreen = (route) => {
                         <TouchableOpacity style={styles.tico}>
                             <FontAwesome name="search" size={24} color={theme.colors.yellow} />
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.tico} onPress={() => navigation.navigate("callScreen")}>
+                        <TouchableOpacity style={styles.tico} onPress={() => navigation.navigate("videoCallScreen")}>
                             <FontAwesome name="video-camera" size={24} color={theme.colors.yellow} />
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.tico} onPress={() => navigation.navigate("conResult")}>
+                        <TouchableOpacity style={styles.tico} onPress={() => navigation.navigate("previousConsult", {
+                            patient: u,
+                            doctor: user,
+                        })}>
                             <FontAwesome name="book" size={24} color={theme.colors.yellow} />
                         </TouchableOpacity>
                     </View>
                 </View>
             </View>
-            <View style={{flex:1, backgroundColor:"#fff"}}>
+            <View style={{flex:1, backgroundColor:"#fff", paddingBottom: 10}}>
+            {loading && <View style={{alignSelf:"center", marginTop: 50}}><ActivityIndicator /></View>}
             <GiftedChat
                 messages={messages}
                 onSend={newMessages => onSend(newMessages)}

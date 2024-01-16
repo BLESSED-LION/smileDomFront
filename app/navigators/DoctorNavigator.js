@@ -9,6 +9,9 @@ import ConsultationResultScreen from '../screens/ConsultationResultScreen';
 import PreviousConsultationsScreen from '../screens/PreviousConsultationScreen';
 import ConsultationForm from '../screens/ConsultFormScreen';
 import CallScreen from '../screens/CallScreen';
+import ProfileScreen from '../screens/ProfileScreen';
+import NotificationsScreen from '../screens/NotificationsScreen';
+import VideoCallScreen from '../screens/VideoCallScreen';
 
 const Stack = createStackNavigator();
 
@@ -18,12 +21,15 @@ const DoctorNavigator = () => {
     <Stack.Navigator>
       <Stack.Screen name="docHome" component={HomeScreen} options={{ headerShown: false }} />
       <Stack.Screen name="doctor" component={DoctorInfoScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="profile" component={ProfileScreen} options={{ headerShown: false }} />
       <Stack.Screen name="chatDoctor" component={ChatScreen} options={{ headerShown: false }} />
       <Stack.Screen name="chatPatient" component={PatientChatScreen} options={{ headerShown: false }} />
       <Stack.Screen name="conResult" component={ConsultationResultScreen} options={{ headerShown: false }} />
       <Stack.Screen name="previousConsult" component={PreviousConsultationsScreen} options={{ headerShown: false }} />
       <Stack.Screen name="consultForm" component={ConsultationForm} options={{ headerShown: false }} />
       <Stack.Screen name="callScreen" component={CallScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="videoCallScreen" component={VideoCallScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="notifications" component={NotificationsScreen} options={{ headerShown: false }} />
     </Stack.Navigator>
   )
 }

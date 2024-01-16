@@ -10,23 +10,24 @@ import { auth, db } from '../config/firebaseConfig';
 import { addDoc, collection, doc, onSnapshot, orderBy, query, updateDoc, where } from 'firebase/firestore';
 import Toast from 'react-native-toast-message';
 import { Ionicons } from '@expo/vector-icons';
+import { ActivityIndicator } from 'react-native-paper';
 
 const ChatScreen = ({ route, navigation }) => {
     const [messages, setMessages] = useState([]);
     const [text, setText] = useState('');
+    const [loading, setLoading] = useState(true);
     const { theme } = useTheme();
     const { patient, doctor } = route.params;
     const messagesCollectionRef = collection(db, 'messages');
-    // const navigation = useNavigation()
-
-    // const onSend = (newMessages = []) => {
-    //     setMessages(previousMessages => GiftedChat.append(previousMessages, newMessages));
-    // };
 
     useEffect(() => {
-        const q = query(messagesCollectionRef, orderBy('createdAt', 'desc'), where('senderId', 'in', [auth.currentUser.uid, patient.patient.id]),
-            where('receiverId', 'in', [auth.currentUser.uid, patient.patient.id]),);
-
+        const q = query(messagesCollectionRef, 
+            orderBy('createdAt', 'desc'), 
+            where('senderId', 'in', [auth.currentUser.uid, patient.patient.id]),
+            where('receiverId', 'in', [auth.currentUser.uid, patient.patient.id]),
+            where('chatId', '==', patient.patient.id + auth.currentUser.uid)
+            );
+          
         const unsubscribe = onSnapshot(q, querySnapshot => {
             const msgs = querySnapshot.docs.map((doc) => doc.data())
             console.log("snapshot: ", msgs)
@@ -41,16 +42,13 @@ const ChatScreen = ({ route, navigation }) => {
                 }))
             );
             console.log("Messages: ", messages)
+            setLoading(false)
         });
 
         return () => unsubscribe();
     }, []);
 
     const onSend = useCallback((messages = []) => {
-
-        setMessages(previousMessages =>
-            GiftedChat.append(previousMessages, messages)
-        );
         console.log("checking messages...: ", messages)
         const { _id, createdAt, text, user } = messages[0];
         console.log(text)
@@ -61,6 +59,7 @@ const ChatScreen = ({ route, navigation }) => {
                 mesage: text,
                 senderId: auth.currentUser.uid,
                 receiverId: patient.patient.id,
+                chatId: patient.patient.id + auth.currentUser.uid
             })
             console.log("Message added")
         } catch (error) {
@@ -73,12 +72,7 @@ const ChatScreen = ({ route, navigation }) => {
                 duration: 3000, // Duration in milliseconds
             });
         }
-    }, [route.params]);
-
-    // useEffect(() => {
-    //     const { messages: msgs } = route.params;
-    //     setMessages(msgs);
-    //   }, [route.params]);
+    }, [messages]);
 
     return (
         <View style={styles.container}>
@@ -98,7 +92,7 @@ const ChatScreen = ({ route, navigation }) => {
                         <TouchableOpacity style={styles.tico}>
                             <FontAwesome name="search" size={24} color={theme.colors.yellow} />
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.tico} onPress={() => navigation.navigate("callScreen")}>
+                        <TouchableOpacity style={styles.tico} onPress={() => navigation.navigate("videoCallScreen")}>
                             <FontAwesome name="video-camera" size={24} color={theme.colors.yellow} />
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.tico} onPress={() => navigation.navigate("previousConsult", {
@@ -110,7 +104,8 @@ const ChatScreen = ({ route, navigation }) => {
                     </View>
                 </View>
             </View>
-            <View style={{ flex: 1, backgroundColor: "#fff" }}>
+            <View style={{ flex: 1, backgroundColor: "#fff", paddingBottom: 10 }}>
+            {loading && <View style={{alignSelf:"center", marginTop: 50}}><ActivityIndicator /></View>}
                 <GiftedChat
                     messages={messages}
                     onSend={newMessages => onSend(newMessages)}

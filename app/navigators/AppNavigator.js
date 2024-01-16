@@ -18,6 +18,8 @@ import { collection, getDoc, getDocs, query, where } from 'firebase/firestore';
 import { extractLastName } from '../constants/helpers';
 import PatientsScreen from '../screens/PatientsScreen';
 import { signOut } from 'firebase/auth';
+import { useNavigation } from '@react-navigation/native';
+import SettingsScreen from '../screens/SettingScreen';
 // import { useDispatch } from 'react-redux';
 
 const Tab = createBottomTabNavigator();
@@ -59,8 +61,9 @@ const LogoImage = () => {
 const HeaderRightIcons = () => {
   const dispatch = useDispatch()
   const [forceRerender, setForceRerender] = useState(false);
-  const user = useSelector((state) => state.auth.user);
+  const user = useSelector((state) => state.user.user);
   const [r, sR] = useState(0)
+  const navigation = useNavigation()
 
   const handleLogout = () => {
 
@@ -68,6 +71,7 @@ const HeaderRightIcons = () => {
       .then(() => {
         console.log("User signed out successfully!");
         sR(1)
+        // navigation.navigate("sighUp")
         // Handle successful logout (e.g., redirect to login page)
       })
       .catch((error) => {
@@ -77,14 +81,14 @@ const HeaderRightIcons = () => {
   }
 
   const { theme } = useTheme();
-  const [notifications, setNotifications] = useState(1);
+  const [notifications, setNotifications] = useState(0);
 
   return (
     <View style={[styles.headerRight, { justifyContent: 'center', alignItems: 'center' }]}>
-      <TouchableOpacity style={[{ marginRight: 5 }]} onPress={() => {/* Handle search icon click */ }}>
-        <MaterialCommunityIcons name="magnify" size={30} color={theme.colors.Text} />
+      <TouchableOpacity style={[{ marginRight: 5 }]} onPress={handleLogout}>
+        <MaterialCommunityIcons name="account-arrow-left" size={30} color={theme.colors.Text} />
       </TouchableOpacity>
-      <TouchableOpacity style={[{ marginRight: 5 }]} onPress={() => handleLogout()}>
+      <TouchableOpacity style={[{ marginRight: 5 }]} onPress={() => navigation.navigate("notifications")}>
         <MaterialCommunityIcons name="bell-outline" size={30} color={theme.colors.Text} />
         {/* Add a badge component or indicator here */}
         {notifications > 0 && (
@@ -114,7 +118,7 @@ const HeaderRightIcons = () => {
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: 100,
-      }]} onPress={() => {/* Handle user profile click */ }}>
+      }]} onPress={() => {navigation.navigate("profile", {userInfor: user ? user : {}})}}>
         <MaterialCommunityIcons name="account-outline" size={25} color={theme.colors.White} />
       </TouchableOpacity>
     </View>
@@ -225,8 +229,7 @@ const AppNavigator = ({ type }) => {
               },
             }}
           />}
-        {type === "doctor" ?
-          // {user && extractLastName(user.user.displayName) === "doctor" ?
+        {/* {type === "doctor" ?
           <Tab.Screen name="Admin" component={PrinscribesScreen}
             options={({ route }) => ({
               tabBarBadge: 0,
@@ -246,7 +249,8 @@ const AppNavigator = ({ type }) => {
                 color: theme.colors.LoadingBG,
               },
             }}
-          />}
+          />} */}
+          {type === "patient" &&
         <Tab.Screen name="Sessions" component={SessonsScreen}
           options={({ route }) => ({
             tabBarBadge: 0,
@@ -254,8 +258,8 @@ const AppNavigator = ({ type }) => {
             tabBarLabel: 'Sessions',
             tabBarVisible: false,
           })}
-        />
-        <Tab.Screen name="Setting" component={SettingScreen} options={{ headerShown: false }} />
+        />}
+        <Tab.Screen name="Setting" component={SettingsScreen} options={{ headerShown: true, headerTitleAlign:"center" }} />
       </Tab.Navigator>
     );
   }

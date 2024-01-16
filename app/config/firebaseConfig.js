@@ -77,4 +77,4 @@ const getUser = async () => {
   }
 }
 
-export { auth, app, db, storgae, addUser, getUser }
+export { auth, app, db, storgae, addUser, getUser, firebaseConfig }

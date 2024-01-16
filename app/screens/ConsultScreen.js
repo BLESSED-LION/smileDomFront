@@ -10,7 +10,7 @@ import {db} from "../config/firebaseConfig"
 
 const ConsultScreen = () => {
   const { theme } = useTheme();
-  const [selectedCategory, setSelectedCategory] = useState('General Consultant');
+  const [selectedCategory, setSelectedCategory] = useState('General consultant');
   const [loading, setLoading] = useState(true);
   const [doctors, setDoctors] = useState([]);
   const [gp, setGp] = useState([]);
@@ -133,16 +133,7 @@ const ConsultScreen = () => {
             paddingTop: 15,
           }}
           >
-            {/* Render content for Category 1 */}
-            {/* <Image
-            resizeMode='contain'
-            style={{
-              height: 205,
-              width: 175,
-              borderRadius: 5,
-            }}
-            source={require('../../assets/Consult/Frame.png')} /> */}
-            <DoctorList data={gp} />
+            <DoctorList data={[...gp, ...dentists]} />
           </View>
         );
       case 'Dentist':

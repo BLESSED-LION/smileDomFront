@@ -20,20 +20,24 @@ const UserCard = ({ name, specialty, image, onPress }) => {
 
 const DoctorList = ({ data }) => {
   const navigation = useNavigation();
+  const v = JSON.stringify(data) === JSON.stringify([]) ? true : false
+  console.log("V: ", v)
   // <ScrollView>
   return (
     <View style={styles.container}>
-      {data != [] ? data.map(user => {
+      {data.map(user => {
         return (
           <UserCard
             key={user.id}
             name={extractAllButLastName(user.name)}
             specialty={user.specialization === "general practitioner" ? "GP" : user.specialization}
-            image={user.image ? user.image : require("../../assets/icon.png")}
+            image={user.image ? {uri: user.image} : require("../../assets/icon.png")}
             onPress={() => navigation.navigate("chatPatient", { user })}
           />
         )
-      }) : <LoadingComponent />}
+      })}
+      {v && <Text style={{fontSize: 16}}>Cannot load data at the current moment</Text>}
+
     </View>
   )
   // </ScrollView>

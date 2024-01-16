@@ -5,7 +5,7 @@ import { MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
 import CompleteModal from './Modal/Modal';
 
-const Post = ({ DoctorName, postImage, DoctorPhoto, likes, comments, PostPublishDate, onPress, onPressFollow }) => {
+const Post = ({ DoctorName, postImage, DoctorPhoto, likes, comments, PostPublishDate, onPress, onPressFollow, commentPress }) => {
     const { theme } = useTheme();
     
     return (
@@ -144,6 +144,7 @@ const Post = ({ DoctorName, postImage, DoctorPhoto, likes, comments, PostPublish
                             backgroundColor: theme.colors.grey,
                             alignItems: 'center'
                         }}
+                        onPress={commentPress}
                     >
                         <FontAwesome5 name="comment-dots" size={24} color={theme.colors.accountText} />
                         <Text

@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, ScrollView } from 'react-native';
 import { Ionicons, Fontisto } from '@expo/vector-icons';
 import { TextInput, IconButton } from 'react-native-paper';
+import { Calendar } from 'react-native-calendars';
+import { db } from '../config/firebaseConfig';
+import { addDoc, collection } from 'firebase/firestore';
+import Toast from 'react-native-toast-message';
 
 const ConsultationForm = ({ navigation, route }) => {
     const [activeTab, setActiveTab] = useState(0);
@@ -10,22 +14,70 @@ const ConsultationForm = ({ navigation, route }) => {
         inputFields[activeTab].map((field) => ({ ...field, value: '' }))
     );
     const [formData, setFormData] = useState({});
-    const [complaint, setComplaint] = useState('');
     const { patient, doctor } = route.params;
+    const [selectedDate, setSelectedDate] = useState('');
+    const [loading, setLoading] = useState(false)
+
+    const handleDayPress = (day) => {
+        setSelectedDate(day.dateString);
+        console.log(selectedDate)
+    };
+    const markedDates = {};
+    markedDates[selectedDate] = { selected: true };
 
     const handleTabPress = (tab) => {
         setActiveTab(tab);
+        console.log("Active tab is: ", activeTab)
+        console.log("Tabs: ", inputFields)
     };
 
     const handleSubmit = () => {
-        const data = inputFields[activeTab].map((field, index) => ({
-          [field.name]: fieldValues[index] && fieldValues[index].value,
-        }));
-        setFormData(data); // Store in formData for potential display or further actions
-      
-        console.log(formData)
-      };
-      
+        setLoading(true)
+        const complains = inputFields[0].map((field, index) => field.value);
+        const history = inputFields[1].map((field, index) => field.value);
+        const examinations = inputFields[2].map((field, index) => field.value);
+        const diagnosis = inputFields[3].map((field, index) => field.value);
+        const workups = inputFields[4].map((field, index) => field.value);
+        const treatment = inputFields[5].map((field, index) => field.value);
+        const appointment = selectedDate;
+
+        const appointmentData = {
+            complains,
+            history,
+            examinations,
+            diagnosis,
+            workups,
+            treatment,
+            appointment,
+            doctor: doctor.id,
+            patient: patient.patient.id
+        }
+        const appointmentsCollectionRef = collection(db, "appointments");
+        addDoc(appointmentsCollectionRef, appointmentData)
+            .then((docRef) => {
+                console.log("Document written with ID: ", docRef.id);
+                setLoading(false)
+                Toast.show({
+                    text1: 'Consultation made...',
+                    type: 'success', // Can be 'success', 'info', 'warning', or 'error'
+                    position: 'top', // Can be 'top', 'center', or 'bottom'
+                    duration: 3000, // Duration in milliseconds
+                });
+                navigation.goBack()
+            })
+            .catch((error) => {
+                console.error("Error adding document: ", error);
+                setLoading(false)
+                Toast.show({
+                    text1: 'There was an error',
+                    type: 'error', // Can be 'success', 'info', 'warning', or 'error'
+                    position: 'top', // Can be 'top', 'center', or 'bottom'
+                    duration: 3000, // Duration in milliseconds
+                });
+            });
+        console.log(appointmentData)
+    };
+
 
     const handleAddField = () => {
         console.log("Adding field...")
@@ -130,17 +182,6 @@ const ConsultationForm = ({ navigation, route }) => {
                         marginTop: 10
                     }]}>Appointment</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleTabPress(7)}>
-                    <Text style={[{
-                        color: activeTab === 7 ? '#5fbae8' : '#fff',
-                        backgroundColor: activeTab === 7 ? '#fff' : '#5fbae8',
-                        padding: 12,
-                        borderRadius: 15,
-                        fontWeight: "700",
-                        fontSize: 12,
-                        marginTop: 10
-                    }]}>Signature</Text>
-                </TouchableOpacity>
                 <TouchableOpacity>
                     <Text style={[{
                         color: activeTab === 'Report PDF' ? '#e00000' : '#fff',
@@ -165,7 +206,7 @@ const ConsultationForm = ({ navigation, route }) => {
                 </TouchableOpacity>
             </View>
             <ScrollView style={{ padding: 10, flex: 1, backgroundColor: "#fff" }}>
-                {inputFields[activeTab] && inputFields[activeTab].map((field, index) => (
+                {activeTab != 6 ? inputFields[activeTab].map((field, index) => (
                     <TextInput
                         key={index}
                         placeholder={"Enter text"}
@@ -182,22 +223,24 @@ const ConsultationForm = ({ navigation, route }) => {
                                 name="close"
                                 onPress={() => handleDeleteField(index)}
                             />}
-                        value={fieldValues[index] && fieldValues[index].value}
-                        onChangeText={(newValue) =>
-                            setFieldValues((prevValues) =>
-                                prevValues.map((field, fieldIndex) =>
-                                    fieldIndex === index ? { ...field, value: newValue } : field
-                                )
-                            )
+                        value={inputFields[activeTab][index].value ? inputFields[activeTab][index].value : ""}
+                        onChangeText={(newValue) => {
+                            const fields = [...inputFields];
+                            fields[activeTab][index] = { value: newValue };
+                            setInputFields(fields);
+                        }
                         }
                     />
-                ))}
+                )) : <Calendar
+                    onDayPress={handleDayPress}
+                    markedDates={markedDates}
+                />}
                 <TouchableOpacity onPress={handleSubmit} style={{
-                backgroundColor: '#5fbae8',
-                padding: 10,
-            }}>
-                <Text style={{ textAlign: 'center', backgroundColor: "#5fbae8", color: "#fff" }}>SUBMIT FORM</Text>
-            </TouchableOpacity>
+                    backgroundColor: '#5fbae8',
+                    padding: 10,
+                }}>
+                    <Text style={{ textAlign: 'center', backgroundColor: "#5fbae8", color: "#fff" }}>{!loading ? "SUBMIT FORM" : "SUBMITTING..."}</Text>
+                </TouchableOpacity>
             </ScrollView>
         </View>
     );

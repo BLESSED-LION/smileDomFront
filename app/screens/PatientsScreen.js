@@ -2,7 +2,7 @@ import { StyleSheet, Text, View, Image, TouchableOpacity, ScrollView, TextInput 
 import React, { useEffect, useState } from 'react'
 import { useTheme } from '../constants/theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Badge } from 'react-native-paper';
+import { ActivityIndicator, Badge } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { auth, db } from '../config/firebaseConfig';
 import { collection, getDocs, limit, orderBy, query, where } from 'firebase/firestore';
@@ -14,11 +14,7 @@ const PatientsScreen = ({route}) => {
   const [doctor, setDoctor] = useState({})
   const [patients, setPatients] = useState([])
   const [msgs, setMsgs] = useState([])
-  const users = [
-    { name: 'User 1', profileImage: require('../../assets/doctors/1.png'), lastMessage: 'Hello', unreadMessages: 2, lastMessageTime: '10:30 AM' },
-    { name: 'User 2', profileImage: require('../../assets/doctors/2.png'), lastMessage: 'Hey there', unreadMessages: 0, lastMessageTime: 'Yesterday' },
-    { name: 'User 3', profileImage: require('../../assets/doctors/3.png'), lastMessage: 'What\'s up?', unreadMessages: 5, lastMessageTime: '2 days ago' }
-  ];
+  const [loading, setLoading] = useState(true)
 
   async function getPatientsAndMessages() {
     try {
@@ -46,6 +42,8 @@ const PatientsScreen = ({route}) => {
       // Get the patient data and messages for each patient
       const patientsAndMessages = [];
       for (const patientId of doctor.patients) {
+        const chatId = patientId + doctor.id;
+        console.log(chatId)
         const patientRef = query(collection(db, "users"), where("id", "==", patientId));
         const patientSnapshot = await getDocs(patientRef);
 
@@ -57,6 +55,7 @@ const PatientsScreen = ({route}) => {
           collection(db, "messages"),
           where("senderId", "in", [auth.currentUser.uid, patientId]),
           where("receiverId", "in", [auth.currentUser.uid, patientId]),
+          where('chatId', '==', chatId),
           orderBy("createdAt", "desc"),
           limit(10) // Optional: Limit the number of messages fetched
         );
@@ -86,6 +85,7 @@ const PatientsScreen = ({route}) => {
           patient: {...patientSnapshot.docs[0].data(), _id: patientSnapshot.docs[0].data().id },
         });
         setPatients(patientsAndMessages)
+        setLoading(false)
       }
 
       console.log(patientsAndMessages); // Output the fetched data
@@ -96,7 +96,7 @@ const PatientsScreen = ({route}) => {
 
   useEffect(() => {
     getPatientsAndMessages();
-  }, [])
+  }, [doctor])
 
   const SearchBar = () => {
     return (
@@ -125,6 +125,7 @@ const PatientsScreen = ({route}) => {
   return (
     <View style={[{
       flex: 1,
+      backgroundColor: "#fff"
     }]}>
       <View
         style={{
@@ -161,6 +162,7 @@ const PatientsScreen = ({route}) => {
           >Reports</Text>
         </View>
       </View>
+      {loading && <View style={{alignSelf:"center", marginTop: 50}}><ActivityIndicator /></View>}
 
       <View>
         {patients.map((user, index) => (

@@ -18,6 +18,8 @@ import { useDispatch } from 'react-redux';
 import { getUserInfo, loginSuccess } from '../store/actions';
 import { addUser, getUser } from '../config/firebaseConfig';
 import Toast from 'react-native-toast-message';
+import { StatusBar } from 'expo-status-bar';
+import { ActivityIndicator } from 'react-native-paper';
 
 const CELL_COUNT = 6;
 const RESEND_OTP_TIME_LIMIT = 90;
@@ -26,9 +28,10 @@ export default function () {
     let resendOtpTimerInterval = 5000;
     const route = useRoute()
     const [loading, setLoading] = useState(false);
+    const [stay, setStay] = useState(false);
     const [verificationWrong, setVerificationWrong] = useState(false);
     const { theme } = useTheme()
-    const { confirmationResult } = route.params;
+    const { confirmationResult, verifyOtp } = route.params;
     const dispatch = useDispatch()
 
     const [resendButtonDisabledTime, setResendButtonDisabledTime] = useState(
@@ -40,7 +43,8 @@ export default function () {
         console.log(confirmationResult);
         if (confirmationResult) {
             try {
-                const userCredential = await confirmationResult.confirm(code);
+                // const userCredential = await confirmationResult.confirm(code);
+                const userCredential = await verifyOtp(confirmationResult, code);
                 setLoading(true);
                 if (userCredential) {
                     // const creds = { id: userCredential.uid, _id: userCredential.uid, phoneNumber: userCredential.phoneNumber, type: "patient" }
@@ -48,11 +52,12 @@ export default function () {
                     dispatch(loginSuccess(userCredential));
                 }
                 setLoading(false)
+                setStay(true)
                 Toast.show({
                     text1: 'Phone verified, setting up...',
                     type: 'success', // Can be 'success', 'info', 'warning', or 'error'
                     position: 'top', // Can be 'top', 'center', or 'bottom'
-                    duration: 30000, // Duration in milliseconds
+                    duration: 50000, // Duration in milliseconds
                 });
             } catch (error) {
                 setVerificationWrong(true);
@@ -112,6 +117,7 @@ export default function () {
 
     return (
         <SafeAreaView style={styles.root}>
+            {!stay &&
             <View
                 style={{
                     flexDirection: "row",
@@ -146,8 +152,10 @@ export default function () {
                 >
                     Verify your number
                 </Text>
-            </View>
+            </View>}
+            {stay && <View style={{paddingTop: 30}}><ActivityIndicator /></View>}
             {/* <Text style={styles.title}>Verify the Authorisation Code</Text> */}
+            {!stay &&<>
             <Text style={styles.subTitle}>Waiting to automatically detect an SMS sent to </Text>
             <Text style={styles.subTitle}>+237 679 68 26 26</Text>
             <CodeField
@@ -192,6 +200,8 @@ export default function () {
                 />
             </View>
             {verificationWrong && <Text style={{ color: "red" }}>Wrong code</Text>}
+            </>}
+            <StatusBar backgroundColor={'#BFD101'} />
         </SafeAreaView >
     );
 }

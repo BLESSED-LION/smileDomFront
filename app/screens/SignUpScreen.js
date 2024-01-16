@@ -1,7 +1,5 @@
 import { TextInput, StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native'
 import React, { useState, useRef, useContext } from 'react'
-import { signInWithPhoneNumber } from "@firebase/auth";
-import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
 import Toast from 'react-native-toast-message';
 
 import { StatusBar } from 'expo-status-bar'
@@ -9,23 +7,25 @@ import { useTheme } from '../constants/theme';
 import LoginInput from '../components/LoginInput';
 import InputLogin from '../components/InputLogin';
 import AppButton from '../components/AppButton'
-import { auth, app } from '../config/firebaseConfig';
+import { auth, app, firebaseConfig } from '../config/firebaseConfig';
 
 import { useDispatch } from 'react-redux';
 import { loginSuccess } from '../store/actions';
 import { useNavigation } from '@react-navigation/native';
+import { useFirebaseLogin } from '@itzsunny/firebase-login';
 
 const SignUpScreen = () => {
   const { theme } = useTheme();
   const dispatch = useDispatch();
   const navigation = useNavigation()
+  const {recaptcha,recaptchaBanner,sendOtp,verifyOtp} = useFirebaseLogin({auth: auth,firebaseConfig:firebaseConfig});
 
   const handlePress = () => {
-    console.log(recaptchaVerifier.current)
+    // console.log(recaptchaVerifier.current)
 
-    if (recaptchaVerifier != null) {
+    // if (recaptchaVerifier != null) {
       loginWithPhoneNumber()
-    }
+    // }
     // dispatch(loginSuccess(user));
   };
 
@@ -45,11 +45,12 @@ const SignUpScreen = () => {
   const loginWithPhoneNumber = async () => {
     console.log(phoneNumber)
     try {
-      const result = await signInWithPhoneNumber(
-        auth,
-        phoneNumber,
-        recaptchaVerifier.current
-      );
+      // const result = await signInWithPhoneNumber(
+      //   auth,
+      //   phoneNumber,
+      //   recaptchaVerifier.current
+      // );
+      const result = await sendOtp(phoneNumber);
       setConfirmationResult(result);
       setIsVerifying(true);
       console.log(result)
@@ -60,7 +61,7 @@ const SignUpScreen = () => {
         position: 'top', // Can be 'top', 'center', or 'bottom'
         duration: 3000, // Duration in milliseconds
       });
-      navigation.navigate("verify", { confirmationResult: result })
+      navigation.navigate("verify", { confirmationResult: result, verifyOtp })
     } catch (error) {
       Toast.show({
         text1: 'There was an error signing in',
@@ -72,7 +73,6 @@ const SignUpScreen = () => {
       console.log(error)
     }
   };
-
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.Background }]}>
@@ -105,11 +105,7 @@ const SignUpScreen = () => {
             }}
           >Dom</Text></Text>
         </View>
-
-        <FirebaseRecaptchaVerifierModal
-          ref={recaptchaVerifier}
-          firebaseConfig={app.options}
-        />
+        {recaptcha}
 
         <View
           style={{
@@ -154,11 +150,11 @@ const SignUpScreen = () => {
           alignItems: "center",
           flexDirection: "row"
         }}>
-          <Text>Don’t have an account? </Text>
-          <TouchableOpacity><Text style={{ textAlign: "center" }}>Create one</Text></TouchableOpacity>
+          {recaptchaBanner}
         </View>
 
       </View>
+      <StatusBar backgroundColor={'#BFD101'} />
     </View>
   )
 }

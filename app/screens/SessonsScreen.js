@@ -1,93 +1,55 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, ScrollView, Text, TouchableOpacity, Image, TextInput } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../constants/theme';
-
-const DummyText = ({text}) => {
-  return (
-    <Text style={{
-      alignSelf: "center",
-      fontSize: 24,
-      fontWeight: "800"
-    }}>
-      {text}
-    </Text>
-  );
-};
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { auth, db } from '../config/firebaseConfig';
+import { ActivityIndicator, List } from 'react-native-paper';
 
 const SessonsScreen = () => {
   const [selectedTab, setSelectedTab] = useState('Chats');
-  const {theme} = useTheme()
+  const [chats, setChats] = useState([])
+  const [apps, setApps] = useState([])
+  const [loading, setLoading] = useState(true)
+  const { theme } = useTheme()
 
-  const tabs = ['Chats', 'Complains', 'Medical History', 'Examinations', 'Diagnosis'];
+  const tabs = ['Chats', 'Complains', 'Medical History', 'Examinations', 'Diagnosis']
 
-  const SearchBar=()=>{
-    return(
-      <View
-      style={{
-        width: 252,
-        backgroundColor: '#D9D9D9',
-        borderRadius: 27,
-        paddingVertical: 11,
-        paddingLeft: 19.5,
-      }}
-      >
-      <TextInput
-        placeholder='Search'
-        style={{
-          fontSize: 14,
-          zIndex: 1000,
-          marginLeft: 10,
-        }}
-        placeholderTextColor="#888"
-      />
-      </View>
-    )
-  }
+  useEffect(async () => {
+    const messagesRef = collection(db, 'messages');
+    const complainsRef = collection(db, 'appointments');
+    const querySnapshot = await getDocs(query(messagesRef, where('senderId', '==', auth.currentUser.uid), where('receiverId', '==', auth.currentUser.uid)));
+    const querySnapshot1 = await getDocs(query(complainsRef, where('patient', '==', auth.currentUser.uid)));
+
+    const groupedMessages = querySnapshot.docs.reduce((acc, doc) => {
+      const messageData = doc.data();
+      const chatId = messageData.chatId;
+      acc[chatId] = acc[chatId] || []; // Initialize group if it doesn't exist
+      acc[chatId].push(messageData);
+      return acc;
+    }, {});
+    const apps = querySnapshot1.docs.map((doc) => doc.data())
+    const groupedMessagesArray = Object.values(groupedMessages);
+    setApps(apps)
+    setChats(groupedMessagesArray)
+    console.log("Grouped Messages: ", groupedMessagesArray)
+    console.log("Appointments: ", apps)
+    setLoading(false)
+
+  }, [])
 
   return (
-    <View>
-      <View
+    <View
       style={{
-        flexDirection:'row',
-        paddingTop:45,
-        justifyContent: 'space-between',
-        paddingHorizontal: 15,
-        paddingBottom: 16,
-        alignItems: 'center',
-        marginBottom: 12,
+        marginTop: 50,
       }}
-      >
-        <Image
-        source={require('../../assets/happy_icon.png')}
-        resizeMode='contain'
-        style={{
-          height: 34,
-          width: 36.52,
-        }} />
-
-        <SearchBar />
-
-        <View
-        style={{
-          justifyContent: 'center',
-          alignItems:'center'
-        }}
-        >
-          <MaterialCommunityIcons name="note-text" size={25} color={theme.colors.accountText} />
-          <Text
-          style={{
-            fontSize:8.26,
-          }}
-          >Reports</Text>
-        </View>
-      </View>
+    >
       <ScrollView horizontal>
         {tabs.map((tab, index) => (
-          <TouchableOpacity 
-            key={index} 
+          <TouchableOpacity
+            key={index}
             onPress={() => setSelectedTab(tab)}
-            style = {{
+            style={{
               borderTopColor: theme.colors.Background,
               borderLeftColor: theme.colors.Background,
               borderRightColor: theme.colors.Background,
@@ -99,13 +61,75 @@ const SessonsScreen = () => {
           </TouchableOpacity>
         ))}
       </ScrollView>
+      {loading && <View style={{alignSelf:"center", marginTop: 50}}><ActivityIndicator /></View>}
+      {!loading && chats == [] ? <View style={{alignSelf:"center", marginTop: 50}}>
+        <Text style={{fontSize:16, fontWeight:"900"}}>No data to display. Consult to get results</Text>
+      </View>:
       <View style={{ padding: 20 }}>
-        {selectedTab === 'Chats' && <DummyText text={"Chats"} />}
-        {selectedTab === 'Complains' && <DummyText text={"Complains"} />}
-        {selectedTab === 'Medical History' && <DummyText text={"Medical history"} />}
-        {selectedTab === 'Examinations' && <DummyText text={"Examinations"} />}
-        {selectedTab === 'Diagnosis' && <DummyText text={"Diagnosis"} />}
-      </View>
+        {selectedTab === 'Chats' && (
+          <List.Section>
+            {chats.map((chat) => (
+              <List.Item
+                key={chat._id}
+                title={chat[0].mesage}
+                description={chat[1] ? chat[1].mesage : chat[0].mesage}
+                left={(props) => (
+                  // <List.Icon {...props} icon={chat.unread ? 'email' : 'email-read'} />
+                  <List.Icon {...props} icon={'email'} />
+                )}
+              />
+            ))}
+          </List.Section>
+        )}
+        {selectedTab === 'Complains' && (
+          <List.Section>
+          {apps.map((arr, index) => (
+            <List.Item
+              key={index}
+              title={arr.complains[0]}
+              description={arr.complains[0]}
+              left={(props) => <List.Icon {...props} icon="alert-circle" />}
+            />
+          ))}
+        </List.Section>
+        )}
+        {selectedTab === 'Medical History' && (
+          <List.Section>
+          {apps.map((arr, index) => (
+            <List.Item
+              key={index}
+              title={arr.history[0]}
+              description={arr.history[0]}
+              left={(props) => <List.Icon {...props} icon="alert-circle" />}
+            />
+          ))}
+        </List.Section>
+        )}
+        {selectedTab === 'Examinations' && (
+          <List.Section>
+          {apps.map((arr, index) => (
+            <List.Item
+              key={index}
+              title={arr.examinations[0]}
+              description={arr.examinations[0]}
+              left={(props) => <List.Icon {...props} icon="alert-circle" />}
+            />
+          ))}
+        </List.Section>
+        )}
+        {selectedTab === 'Diagnosis' && (
+          <List.Section>
+          {apps.map((arr, index) => (
+            <List.Item
+              key={index}
+              title={arr.diagnosis[0]}
+              description={arr.diagnosis[0]}
+              left={(props) => <List.Icon {...props} icon="alert-circle" />}
+            />
+          ))}
+        </List.Section>
+        )}
+      </View>}
     </View>
   );
 };
