@@ -11,13 +11,18 @@ import { addDoc, collection, doc, onSnapshot, orderBy, query, updateDoc, where }
 import Toast from 'react-native-toast-message';
 import { Ionicons } from '@expo/vector-icons';
 import { ActivityIndicator } from 'react-native-paper';
+import WebView from 'react-native-webview';
 
 const ChatScreen = ({ route, navigation }) => {
     const [messages, setMessages] = useState([]);
     const [text, setText] = useState('');
     const [loading, setLoading] = useState(true);
     const { theme } = useTheme();
+    const [call, setCall] = useState(false);
     const { patient, doctor } = route.params;
+    // const patient = pat ? patient : {profileImage: "", patient: {id: ""}, name: ""};
+    console.log("The patient: ", patient)
+    // const doctor = doct ? doct : {id: "", name: ""};
     const messagesCollectionRef = collection(db, 'messages');
 
     useEffect(() => {
@@ -81,20 +86,23 @@ const ChatScreen = ({ route, navigation }) => {
                     <Ionicons name="arrow-back" size={20} color="black" />
                 </TouchableOpacity>
                 <TouchableOpacity>
-                    <Image source={patient.profileImage} style={styles.profileImage} />
+                    <Image source={patient && patient.profileImage} style={styles.profileImage} />
                 </TouchableOpacity>
                 <View style={styles.userInfo}>
                     <TouchableOpacity style={styles.userName}>
-                        <Text style={{ fontWeight: "500" }}>{patient.name}</Text>
+                        <Text style={{ fontWeight: "500" }}>{patient && patient.name}</Text>
                         <Text>Online</Text>
                     </TouchableOpacity>
                     <View style={styles.iconContainer}>
                         <TouchableOpacity style={styles.tico}>
                             <FontAwesome name="search" size={24} color={theme.colors.yellow} />
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.tico} onPress={() => navigation.navigate("videoCallScreen")}>
+                        <TouchableOpacity style={styles.tico} onPress={() => setCall(true)}>
                             <FontAwesome name="video-camera" size={24} color={theme.colors.yellow} />
                         </TouchableOpacity>
+                        {/* <TouchableOpacity style={styles.tico} onPress={() => navigation.navigate("videoCallScreen")}>
+                            <FontAwesome name="video-camera" size={24} color={theme.colors.yellow} />
+                        </TouchableOpacity> */}
                         <TouchableOpacity style={styles.tico} onPress={() => navigation.navigate("previousConsult", {
                             patient,
                             doctor,
@@ -104,9 +112,10 @@ const ChatScreen = ({ route, navigation }) => {
                     </View>
                 </View>
             </View>
+            {call && <WebView source={{ uri: 'https://dlvryy.web.app' }} style={{ flex: 1 }} />}
             <View style={{ flex: 1, backgroundColor: "#fff", paddingBottom: 10 }}>
             {loading && <View style={{alignSelf:"center", marginTop: 50}}><ActivityIndicator /></View>}
-                <GiftedChat
+                {!call && <GiftedChat
                     messages={messages}
                     onSend={newMessages => onSend(newMessages)}
                     text={text}
@@ -118,7 +127,7 @@ const ChatScreen = ({ route, navigation }) => {
                     renderComposer={renderComposer}
                     renderSend={renderSend}
                     user={doctor}
-                />
+                />}
             </View>
             <StatusBar backgroundColor={'#BFD101'} />
         </View>

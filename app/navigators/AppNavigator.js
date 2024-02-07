@@ -11,16 +11,17 @@ import PrinscribesScreen from '../screens/PrinscribesScreen';
 import SessonsScreen from '../screens/SessonsScreen';
 import SettingScreen from '../screens/SettingScreen';
 import { useDispatch, useSelector } from 'react-redux';
-import { getUserInfo, loginSuccess, logout } from '../store/actions';
+import { getDoctorInfo, getMessages, getUserInfo, loginSuccess, logout } from '../store/actions';
 import SignUpScreen from '../screens/SignUpScreen';
 import { auth, db } from '../config/firebaseConfig';
 import { collection, getDoc, getDocs, query, where } from 'firebase/firestore';
 import { extractLastName } from '../constants/helpers';
 import PatientsScreen from '../screens/PatientsScreen';
-import { signOut } from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
 import SettingsScreen from '../screens/SettingScreen';
-// import { useDispatch } from 'react-redux';
+import { useDoctors } from '../hooks/doctors';
+import { useUser } from '../hooks/user';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -70,9 +71,7 @@ const HeaderRightIcons = () => {
     signOut(auth)
       .then(() => {
         console.log("User signed out successfully!");
-        sR(1)
-        // navigation.navigate("sighUp")
-        // Handle successful logout (e.g., redirect to login page)
+        // Expo.Util.reload();
       })
       .catch((error) => {
         console.error("Error signing out:", error);
@@ -81,12 +80,12 @@ const HeaderRightIcons = () => {
   }
 
   const { theme } = useTheme();
-  const [notifications, setNotifications] = useState(0);
+  const [notifications, setNotifications] = useState(1);
 
   return (
     <View style={[styles.headerRight, { justifyContent: 'center', alignItems: 'center' }]}>
       <TouchableOpacity style={[{ marginRight: 5 }]} onPress={handleLogout}>
-        <MaterialCommunityIcons name="account-arrow-left" size={30} color={theme.colors.Text} />
+        <MaterialCommunityIcons name="logout" size={30} color={theme.colors.Text} />
       </TouchableOpacity>
       <TouchableOpacity style={[{ marginRight: 5 }]} onPress={() => navigation.navigate("notifications")}>
         <MaterialCommunityIcons name="bell-outline" size={30} color={theme.colors.Text} />
@@ -126,20 +125,32 @@ const HeaderRightIcons = () => {
 };
 
 
-const AppNavigator = ({ type }) => {
+const AppNavigator = ({ type, messages }) => {
   const { theme } = useTheme();
   const dispatch = useDispatch();
+  const [isLogged, setUserLogged] = useState(false);
+  const {doctors} = useDoctors();
+  const [user, setUser] = useState({})
+  dispatch(getDoctorInfo(doctors));
 
-  if (!auth.currentUser) {
+  useEffect(() => {
+    const authListener = onAuthStateChanged(auth, (user) => {
+      setUserLogged(user ? true : false);
+    });
+    return authListener;
+  }, []);
+
+
+  if (!isLogged) {
     return (
       <Stack.Navigator>
-        <Stack.Screen name="sighUp" component={SignUpScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="signUp" component={SignUpScreen} options={{ headerShown: false }} />
         <Stack.Screen name="verify" component={VerifyOtpScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     )
   }
 
-  if (auth.currentUser) {
+  if (isLogged) {
     return (
       <Tab.Navigator
         initialRouteName="Home"
@@ -229,27 +240,6 @@ const AppNavigator = ({ type }) => {
               },
             }}
           />}
-        {/* {type === "doctor" ?
-          <Tab.Screen name="Admin" component={PrinscribesScreen}
-            options={({ route }) => ({
-              tabBarBadge: 0,
-              headerShown: false,
-              tabBarLabel: 'Admin',
-              tabBarVisible: true,
-            })}
-          /> :
-          <Tab.Screen name="Prescribes" component={PrinscribesScreen}
-            options={{
-              headerShown: false,
-              headerTitleAlign: 'center',
-              headerStyle: {
-                backgroundColor: theme.colors.Background,
-              },
-              headerTitleStyle: {
-                color: theme.colors.LoadingBG,
-              },
-            }}
-          />} */}
           {type === "patient" &&
         <Tab.Screen name="Sessions" component={SessonsScreen}
           options={({ route }) => ({
@@ -259,7 +249,7 @@ const AppNavigator = ({ type }) => {
             tabBarVisible: false,
           })}
         />}
-        <Tab.Screen name="Setting" component={SettingsScreen} options={{ headerShown: true, headerTitleAlign:"center" }} />
+        <Tab.Screen name="Setting" component={SettingsScreen} options={{ headerShown: false, headerTitleAlign:"center" }} />
       </Tab.Navigator>
     );
   }

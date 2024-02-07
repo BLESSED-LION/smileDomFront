@@ -5,7 +5,7 @@ import * as FileSystem from 'expo-file-system';
 import * as Permissions from 'expo-permissions';
 import { auth } from '../config/firebaseConfig';
 
-const ConsultationResults = ({ route }) => {
+const ConsultationResults = ({ route, navigation }) => {
   const { data, doctor, patient } = route.params;
   const dat = data[0];
   const [loading, setLoading] = useState(false)
@@ -148,7 +148,7 @@ const ConsultationResults = ({ route }) => {
       </Card>
 
       <TouchableOpacity style={{ marginBottom: 35 }}>
-        <Button icon="camera" mode="contained" onPress={handleDownload} color='#BFD101'>
+        <Button icon="camera" mode="contained" onPress={() => navigation.navigate("membership")} color='#BFD101'>
           {!loading ? "Download pdf" : "Downloading..."}
         </Button>
       </TouchableOpacity>

@@ -15,12 +15,14 @@ import { updateProfile } from 'firebase/auth';
 import { extractLastName, generateRandomGravatarUrl, generateRandomString } from '../constants/helpers';
 import Toast from 'react-native-toast-message'
 import { addDoc, collection, getFirestore, getDoc, where, query, getDocs } from "firebase/firestore";
-import { getUserInfo } from '../store/actions';
+import { getDoctorInfo, getUserInfo } from '../store/actions';
 import { StatusBar } from 'expo-status-bar';
 import {
   BottomSheetModal,
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet';
+import { useDoctors } from '../hooks/doctors';
+import FloatingButton from '../components/FloatingAction';
 
 const HomeScreen = ({ navigation }) => {
   const { theme } = useTheme();
@@ -32,9 +34,16 @@ const HomeScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const showModal = () => setVisible(false);
   const hideModal = () => setVisible(false);
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
+  const {doctors} = useDoctors();
+  const doct = doctors ? doctors : [{
+    bio: "", email: "", experience: "", id: "", image: "", name: "", phoneNumber: "", specialization: "", type: ""
+  }];
+  console.log("Doctors: ", doct);
   const bottomSheetModalRef = useRef(null)
   const snapPoints = useMemo(() => ['25%', '50%'], []);
+
+  dispatch(getDoctorInfo(doctors));
 
   const handlePresentModalPress = useCallback(() => {
     bottomSheetModalRef.current?.present()
@@ -77,7 +86,9 @@ const HomeScreen = ({ navigation }) => {
   }, [visible])
 
   // Extracting all posts into a single array
-  const allPosts = dummyData.Doctors
+  console.log("The doctors are: ", doctors)
+  const newData = [...dummyData.Doctors, ...doctors];
+  const allPosts = newData
     .filter((doctor) => doctor.posts)
     .flatMap((doctor) => doctor.posts || []);
 
@@ -87,6 +98,8 @@ const HomeScreen = ({ navigation }) => {
     const dateB = new Date(postB.publishDate);
     return dateB - dateA; // Sort by descending order (most recent first)
   });
+
+  console.log("All posts: ", sortedPosts);
 
   const handlePress = async () => {
     const u = await getUser()
@@ -191,6 +204,7 @@ const HomeScreen = ({ navigation }) => {
           </View>
         </BottomSheetModal>
       </BottomSheetModalProvider>
+      <FloatingButton />
     </PaperProvider>
   )
 }

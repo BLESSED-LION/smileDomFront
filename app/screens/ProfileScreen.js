@@ -2,13 +2,33 @@ import React from 'react';
 import { Text, View, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { useTheme } from '../constants/theme';
 import { Ionicons,Fontisto } from '@expo/vector-icons';
+import { useSelector } from 'react-redux';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { signOut } from 'firebase/auth';
+import { auth } from '../config/firebaseConfig';
 
 const ProfileScreen = ({ route, navigation }) => {
   const { theme } = useTheme();
-  const { userInfor } = route.params;
+  // const { user } = route.params;
+  const u = useSelector((state) => state.user.user);
+  const user = u ? u._j : {image: "", name: "", specialization: "", experience: ""};
   const handleGoBack = () => {
     navigation.goBack();
   };
+  const i = user.image ? {uri: user.image} :require("../../assets/icon.png")
+
+  const handleLogout = () => {
+
+    signOut(auth)
+      .then(() => {
+        console.log("User signed out successfully!");
+        // Expo.Util.reload();
+      })
+      .catch((error) => {
+        console.error("Error signing out:", error);
+        // Handle sign-out errors
+      });
+  }
 
   return (
     <View
@@ -35,7 +55,8 @@ const ProfileScreen = ({ route, navigation }) => {
           fontWeight: '400',
           marginLeft: 9,
         }}
-        >{userInfor.name}</Text>
+        >{user.name}</Text>
+        {console.log("Profile user: ", user)}
       </View>
 
       <ScrollView
@@ -51,7 +72,7 @@ const ProfileScreen = ({ route, navigation }) => {
         }}
         >
           <Image
-          source={require("../../assets/SmileDom_1.png")}
+          source={i}
           style={{
             height: 198,
             width: 150,
@@ -68,8 +89,8 @@ const ProfileScreen = ({ route, navigation }) => {
               fontSize: 19,
               fontWeight: 'bold',
             }}
-            >{userInfor.phoneNumber}</Text>
-            <Text>{userInfor.name}</Text>
+            >{user.name}</Text>
+            <Text>{user.phoneNumber}</Text>
 
             <View
             style={{
@@ -88,9 +109,11 @@ const ProfileScreen = ({ route, navigation }) => {
                 alignItems: 'center',
                 flexDirection: 'row'
               }}
+              onPress={handleLogout}
               >
-              <Ionicons name="add" size={20} color="white" />
-              <Text style={{color: theme.colors.White}} >follow</Text>
+              {/* <Ionicons name="add" size={20} color="white" /> */}
+              <MaterialCommunityIcons name="logout" size={20} color={'white'} />
+              <Text style={{color: theme.colors.White}} >Logout</Text>
               </TouchableOpacity>
               <TouchableOpacity
               style={{
@@ -111,7 +134,7 @@ const ProfileScreen = ({ route, navigation }) => {
 
         </View>
 
-
+        {user.type === "doctor" &&
         <View
         style={{
           flexDirection:'row',
@@ -132,7 +155,7 @@ const ProfileScreen = ({ route, navigation }) => {
               color: theme.colors.Accent,
               fontWeight: 'bold'
             }}
-            >127</Text>
+            >0</Text>
           </View>
 
           <View>
@@ -148,7 +171,7 @@ const ProfileScreen = ({ route, navigation }) => {
               color: theme.colors.Accent,
               fontWeight: 'bold'
             }}
-            >+5 years</Text>
+            >{user && user.experience ? user.experience : ""}</Text>
           </View>
 
           <View>
@@ -164,9 +187,9 @@ const ProfileScreen = ({ route, navigation }) => {
               color: theme.colors.Accent,
               fontWeight: 'bold'
             }}
-            >24 Consults</Text>
+            >{user.patients.length}</Text>
           </View>
-        </View>
+        </View>}
 
         <View
         style={{
@@ -190,7 +213,7 @@ const ProfileScreen = ({ route, navigation }) => {
               fontSize: 16,
               fontWeight: 'bold',
             }}
-            >{userInfor.DoctorName}</Text>
+            >{user.name}</Text>
           </View>
 
           <View
@@ -208,10 +231,10 @@ const ProfileScreen = ({ route, navigation }) => {
               fontSize: 16,
               fontWeight: 'bold',
             }}
-            >{userInfor.DoctorName}</Text>
+            >{"@" + user.name}</Text>
           </View>
 
-          <View
+          {user.type === "doctor" && <View
           style={{
             marginBottom: 20
           }}
@@ -226,8 +249,8 @@ const ProfileScreen = ({ route, navigation }) => {
               fontSize: 16,
               fontWeight: 'bold',
             }}
-            >{userInfor.DoctorName}</Text>
-          </View>
+            >{user.specialization}</Text>
+          </View>}
 
           <View
           style={{
@@ -262,7 +285,7 @@ const ProfileScreen = ({ route, navigation }) => {
               fontSize: 16,
               fontWeight: 'bold',
             }}
-            >{userInfor.phoneNumber}</Text>
+            >{user.phoneNumber}</Text>
           </View>
 
           <View
@@ -280,7 +303,7 @@ const ProfileScreen = ({ route, navigation }) => {
               fontSize: 16,
               fontWeight: 'bold',
             }}
-            >{userInfor.name}</Text>
+            >{user.email}</Text>
           </View>
 
           <View
@@ -298,7 +321,7 @@ const ProfileScreen = ({ route, navigation }) => {
               fontSize: 16,
               fontWeight: 'bold',
             }}
-            >{userInfor.name}</Text>
+            >{user.name}</Text>
           </View>
 
           <View
@@ -316,7 +339,7 @@ const ProfileScreen = ({ route, navigation }) => {
               fontSize: 16,
               fontWeight: '500',
             }}
-            >Morem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet odio mattis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.</Text>
+            >{user.bio ? user.bio : "No bio yet"}</Text>
           </View>
 
         </View>

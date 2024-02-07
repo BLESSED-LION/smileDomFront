@@ -21,7 +21,7 @@ const UserCard = ({ name, specialty, image, onPress }) => {
 const DoctorList = ({ data }) => {
   const navigation = useNavigation();
   const v = JSON.stringify(data) === JSON.stringify([]) ? true : false
-  console.log("V: ", v)
+  console.log("V: ", data)
   // <ScrollView>
   return (
     <View style={styles.container}>
@@ -32,7 +32,7 @@ const DoctorList = ({ data }) => {
             name={extractAllButLastName(user.name)}
             specialty={user.specialization === "general practitioner" ? "GP" : user.specialization}
             image={user.image ? {uri: user.image} : require("../../assets/icon.png")}
-            onPress={() => navigation.navigate("chatPatient", { user })}
+            onPress={() => {console.log(user); navigation.navigate("chatPatient", { user })}}
           />
         )
       })}

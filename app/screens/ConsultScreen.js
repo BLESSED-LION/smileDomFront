@@ -6,41 +6,24 @@ import { useDispatch, useSelector } from 'react-redux';
 import DoctorList from '../components/DoctorList';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import {db} from "../config/firebaseConfig"
+import { useDoctors } from '../hooks/doctors';
 
 
 const ConsultScreen = () => {
   const { theme } = useTheme();
   const [selectedCategory, setSelectedCategory] = useState('General consultant');
   const [loading, setLoading] = useState(true);
-  const [doctors, setDoctors] = useState([]);
+  // const [doctors, setDoctors] = useState([]);
+  // const doct = useDoctors();
+  // const doctors = doct ? doct : [];
+  const doctors = useSelector((state) => state.doctors.doctors);
+  console.log("Doctors: ", doctors)
   const [gp, setGp] = useState([]);
   const [dentists, setDentists] = useState([]);
   const user = useSelector((state) => state.auth.user);
 
-  const getDoctors = async () => {
-    const usersCollectionRef = collection(db, 'users');
-
-    const querySnapshot = await getDocs(
-      query(
-        usersCollectionRef,
-        where('type', '==', 'doctor') // Filter for users with type "doctor"
-      )
-    );
-
-    querySnapshot.forEach((doc) => {
-      const user = {...doc.data(), __id: doc.id};
-      const userExists = doctors.some((doctor) => doctor.id === user.id);
-      if (!userExists) {
-        setDoctors([...doctors, user]); // Add the user only if not already present
-      }
-      console.log(user.name, user.email, user.specialization); // Example usage
-    });    
-    console.log("doctors ", doctors)
-    setLoading(false)
-  }
-
   useEffect(() => {
-    getDoctors();
+    // getDoctors();
 
     const gp = doctors.filter((doctor) => doctor.specialization === "general practitioner");
     const dentists = doctors.filter((doctor) => doctor.specialization === "dentist");
@@ -227,8 +210,8 @@ const ConsultScreen = () => {
           <FirstCategory category="General consultant" detail="General consultant" />
           <DoctorCategories category="Dentist" detail="Specialist for your teeth" />
           <DoctorCategories category="Neurologist" detail="Focuses on brain damage" />
-          <DoctorCategories category="Dentists" detail="Focuses on brain damage" />
-          <DoctorCategories category="Dentistss" detail="Focuses on brain damage" />
+          <DoctorCategories category="Pediatrist" detail="Focuses on brain damage" />
+          <DoctorCategories category="Surgeon" detail="Focuses on brain damage" />
           <DoctorCategories category="Dent" detail="Focuses on brain damage" />
           {/* Add more DoctorCategories components for additional categories */}
         </ScrollView>

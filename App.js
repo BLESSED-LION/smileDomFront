@@ -1,7 +1,7 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { ThemeProvider } from './app/constants/theme';
 import AppNavigator from "./app/navigators/AppNavigator";
-import { Provider } from 'react-redux';
+import { Provider, useDispatch } from 'react-redux';
 import store from './app/store';
 import Toast from 'react-native-toast-message';
 import { useEffect, useState } from 'react';
@@ -9,6 +9,7 @@ import { collection, getDoc, getDocs, query, where } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from './app/config/firebaseConfig';
 import { StatusBar } from 'expo-status-bar';
+import { getMessages } from './app/store/actions';
 // import { TwilioVideo } from 'react-native-twilio-video-webrtc';
 
 export default function App() {
@@ -20,6 +21,7 @@ export default function App() {
 
       // Query Firestore with UID
       const q = query(collection(db, "users"), where("id", "==", uid));
+      const msg = query(collection(db, "messages"), where("senderId", "==", uid), where("receiverId", "==", uid));
       // const docRef = collection(db, "users", uid);
       getDocs(q)
         .then((snapshot) => {
@@ -40,17 +42,20 @@ export default function App() {
       // User is not authenticated
       // Handle unauthenticated state (e.g., redirect to sign-in)
     }
-  });
+  }
+  );
 
   return (
-    <ThemeProvider >
-      <Provider store={store}>
-      <StatusBar backgroundColor={'#BFD101'}/>
+    <Provider store={store}>
+      <ThemeProvider >
+        <StatusBar backgroundColor={'#BFD101'} />
         <NavigationContainer>
-          <AppNavigator type={userRole === '' ? 'patient' : userRole} />
+          <AppNavigator
+            type={userRole === '' ? 'patient' : userRole}
+          />
           <Toast />
         </NavigationContainer>
-      </Provider>
-    </ThemeProvider>
+      </ThemeProvider>
+    </Provider>
   );
 }

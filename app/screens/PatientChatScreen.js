@@ -10,24 +10,29 @@ import { doc, addDoc, collection, orderBy, query, where, onSnapshot, updateDoc, 
 import { useSelector } from 'react-redux';
 import Toast from 'react-native-toast-message';
 import { ActivityIndicator } from 'react-native-paper';
+import { useDoctor } from '../hooks/doctor';
+import { convertTimeToWhatsAppStyle } from '../constants/helpers';
 
 const PatientChatScreen = (route) => {
     const [messages, setMessages] = useState([]);
     const [text, setText] = useState('');
-    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const { theme } = useTheme();
     console.log(route)
     const { user } = route.route.params;
     const senderId = auth.currentUser.uid
     const receiverId = user.id
-    console.log(user)
+    const { docId, doctor, loadiing: ld } = useDoctor(receiverId)
+    const [loading, setLoading] = useState(ld);
+    console.log("The doctor is: ", user)
+    console.log("The document id: ", docId)
     const navigation = useNavigation()
     const messagesCollectionRef = collection(db, 'messages');
     const u = useSelector((state) => state.user.user);
-    const u1 = u ? {...u._j, _id: u._j.id} : {}
+    console.log("U is:", u)
+    const u1 = u._j ? {...u._j, _id: u._j.id} : {_id: "", id: ""}
     console.log("The modified user is: ", u1)
-    console.log("The doctor's id is: ", user.id)
+    console.log("The doctor's id is: ", docId)
 
     useEffect(() => {
         const chatId = auth.currentUser.uid + user.id
@@ -51,7 +56,7 @@ const PatientChatScreen = (route) => {
                     user: auth.currentUser.uid === doc.data().senderId ? u1 : user
                 }))
             );
-            console.log(messages)
+            console.log("The messages are: ", messages)
             setLoading(false)
         });
 
@@ -59,9 +64,11 @@ const PatientChatScreen = (route) => {
     }, []);
 
     const onSend = useCallback((messages = []) => {
-        const uRef = doc(db, "users", route.route.params.user.__id);
+        console.log("Document iddddd: ", docId)
+        const uRef = doc(db, "users", docId);
         const newData = auth.currentUser.uid
         const chatId = auth.currentUser.uid + route.route.params.user.id
+        console.log("The newest messages are: ", messages);
 
         setMessages(previousMessages =>
             GiftedChat.append(previousMessages, messages)
@@ -79,7 +86,18 @@ const PatientChatScreen = (route) => {
                 chatId: chatId
             }).then(() => {
                 updateDoc(uRef, {
-                    patients: arrayUnion(newData)
+                    patients: arrayUnion(newData),
+                    patientsData: arrayUnion({
+                        patientId: newData,
+                        name: auth.currentUser.displayName,
+                        profileImage: u1.image ? u1.image : "",
+                        messages: messages,
+                        lastMessage: text ? text : "No messages",
+                        unreadMessages: 1,
+                        lastMessageTime: createdAt ? convertTimeToWhatsAppStyle(createdAt) : "Last time",
+                        patient: {...u1, _id: u1.id },
+                        createdAt: createdAt,
+                      })
                   })
                     .then(() => {
                         console.log("Document updated successfully");
@@ -128,6 +146,8 @@ const PatientChatScreen = (route) => {
             </View>
             <View style={{flex:1, backgroundColor:"#fff", paddingBottom: 10}}>
             {loading && <View style={{alignSelf:"center", marginTop: 50}}><ActivityIndicator /></View>}
+            {/* {ld && <View style={{alignSelf:"center", marginTop: 50}}><ActivityIndicator /></View>} */}
+            
             <GiftedChat
                 messages={messages}
                 onSend={newMessages => onSend(newMessages)}

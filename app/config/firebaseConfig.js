@@ -15,21 +15,12 @@ const firebaseConfig = {
   appId: "1:466549108195:web:54c569ee9f8758143c04d6"
 };
 
-// const firebaseConfig = {
-//   apiKey: "AIzaSyBKoKLzUtymtin32VCBfyrscd8Fxk2hvqg",
-//   authDomain: "lala-825bd.firebaseapp.com",
-//   projectId: "lala-825bd",
-//   storageBucket: "lala-825bd.appspot.com",
-//   messagingSenderId: "191714858299",
-//   appId: "1:191714858299:web:cbe7488288a2aca4c8931e"
-// };
-
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app)
 const auth = initializeAuth(app, {
   persistence: getReactNativePersistence(ReactNativeAsyncStorage)
 })
-const storgae = getStorage(app)
+const storage = getStorage(app)
 
 const addUser = async (userDetails) => {
   try {
@@ -77,4 +68,4 @@ const getUser = async () => {
   }
 }
 
-export { auth, app, db, storgae, addUser, getUser, firebaseConfig }
+export { auth, app, db, storage, addUser, getUser, firebaseConfig }

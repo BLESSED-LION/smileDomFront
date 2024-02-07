@@ -12,6 +12,8 @@ import CallScreen from '../screens/CallScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
 import VideoCallScreen from '../screens/VideoCallScreen';
+import UpdateProfileScreen from '../screens/UpdateProfileScreen';
+import MembershipArea from '../screens/MembershipArea';
 
 const Stack = createStackNavigator();
 
@@ -28,7 +30,9 @@ const DoctorNavigator = () => {
       <Stack.Screen name="previousConsult" component={PreviousConsultationsScreen} options={{ headerShown: false }} />
       <Stack.Screen name="consultForm" component={ConsultationForm} options={{ headerShown: false }} />
       <Stack.Screen name="callScreen" component={CallScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="videoCallScreen" component={VideoCallScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="membership" component={MembershipArea} options={{ headerShown: false }} />
+      <Stack.Screen name="updateProfile" component={UpdateProfileScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="videoCallScreen" component={MembershipArea} options={{ headerShown: false }} />
       <Stack.Screen name="notifications" component={NotificationsScreen} options={{ headerShown: false }} />
     </Stack.Navigator>
   )

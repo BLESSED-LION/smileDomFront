@@ -21,12 +21,7 @@ const SignUpScreen = () => {
   const {recaptcha,recaptchaBanner,sendOtp,verifyOtp} = useFirebaseLogin({auth: auth,firebaseConfig:firebaseConfig});
 
   const handlePress = () => {
-    // console.log(recaptchaVerifier.current)
-
-    // if (recaptchaVerifier != null) {
       loginWithPhoneNumber()
-    // }
-    // dispatch(loginSuccess(user));
   };
 
   const handleTextChange = (value) => {
@@ -45,11 +40,6 @@ const SignUpScreen = () => {
   const loginWithPhoneNumber = async () => {
     console.log(phoneNumber)
     try {
-      // const result = await signInWithPhoneNumber(
-      //   auth,
-      //   phoneNumber,
-      //   recaptchaVerifier.current
-      // );
       const result = await sendOtp(phoneNumber);
       setConfirmationResult(result);
       setIsVerifying(true);
@@ -61,7 +51,7 @@ const SignUpScreen = () => {
         position: 'top', // Can be 'top', 'center', or 'bottom'
         duration: 3000, // Duration in milliseconds
       });
-      navigation.navigate("verify", { confirmationResult: result, verifyOtp })
+      navigation.navigate("verify", { confirmationResult: result, verifyOtp, phoneNumber })
     } catch (error) {
       Toast.show({
         text1: 'There was an error signing in',

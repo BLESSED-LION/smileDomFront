@@ -31,7 +31,7 @@ export default function () {
     const [stay, setStay] = useState(false);
     const [verificationWrong, setVerificationWrong] = useState(false);
     const { theme } = useTheme()
-    const { confirmationResult, verifyOtp } = route.params;
+    const { confirmationResult, verifyOtp, phoneNumber } = route.params;
     const dispatch = useDispatch()
 
     const [resendButtonDisabledTime, setResendButtonDisabledTime] = useState(
@@ -45,7 +45,7 @@ export default function () {
             try {
                 // const userCredential = await confirmationResult.confirm(code);
                 const userCredential = await verifyOtp(confirmationResult, code);
-                setLoading(true);
+                setLoading(false);
                 if (userCredential) {
                     // const creds = { id: userCredential.uid, _id: userCredential.uid, phoneNumber: userCredential.phoneNumber, type: "patient" }
                     // addUser(creds)
@@ -68,6 +68,7 @@ export default function () {
             // Handle the case where confirmationResult is not available
             setLoading(false);
         }
+        setLoading(false)
     };
 
 
@@ -153,11 +154,11 @@ export default function () {
                     Verify your number
                 </Text>
             </View>}
-            {stay && <View style={{paddingTop: 30}}><ActivityIndicator /></View>}
+            {loading && <View style={{paddingTop: 30}}><ActivityIndicator /></View>}
             {/* <Text style={styles.title}>Verify the Authorisation Code</Text> */}
             {!stay &&<>
             <Text style={styles.subTitle}>Waiting to automatically detect an SMS sent to </Text>
-            <Text style={styles.subTitle}>+237 679 68 26 26</Text>
+            <Text style={styles.subTitle}>{phoneNumber}</Text>
             <CodeField
                 ref={ref}
                 {...props}
