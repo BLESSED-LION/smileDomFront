@@ -119,15 +119,14 @@ const PatientsScreen = ({route}) => {
               <Text style={styles.userName}>{user.name}</Text>
               <Text style={styles.lastMessage}>{user.lastMessage}</Text>
             </View>
-            {user.unreadMessages > 0 && (
+            {/* {user.unreadMessages > 0 && (
               <View>
                 <Badge>{user.unreadMessages}</Badge>
                 <Text style={styles.lastMessageTime}>{user.lastMessageTime}</Text>
               </View>
-            )}
+            )} */}
           </TouchableOpacity>
         )})}
-        {/* <FloatingButton /> */}
       </View>
 
     </ScrollView>
