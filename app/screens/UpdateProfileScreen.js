@@ -17,7 +17,7 @@ import Toast from 'react-native-toast-message';
 
 
 const UpdateProfileScreen = ({route}) => {
-  const { user } = route.params;
+  const [user, setUser] = useState(route.params.user);
   const u = user ? user : null;
   const type = u ? u.type : "patient";
   const [profileImage, setProfileImage] = useState(u != null && u.image ? u.image : null);
@@ -33,6 +33,8 @@ const UpdateProfileScreen = ({route}) => {
     setLoading(true);
   
     const user = auth.currentUser;
+
+    console.log(user.uid)
   
     let profileImageUrl;
   
@@ -120,6 +122,7 @@ const UpdateProfileScreen = ({route}) => {
   };
 
   useEffect(() => {
+    
     (async () => {
       if (Platform.OS !== 'web') {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -131,19 +134,19 @@ const UpdateProfileScreen = ({route}) => {
   }, []);
 
   const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
-  
-    console.log(result);
-  
-    if (!result.cancelled) {
-      setProfileImage(result.assets[0]);
+    try {
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 1,
+      });
+      if (result && !result.cancelled && result.assets && result.assets.length > 0) {
+        setProfileImage(result.assets[0].uri);
+      }
+    } catch (e) {
+      // console.error(E);
     }
-    console.log("Uri: ", profileImage)
   };
   
   
