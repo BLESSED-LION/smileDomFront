@@ -125,18 +125,7 @@ export const actions = [
 ];
 
 export function filterUniqueAndSortByCreatedAt(arr) {
-  const uniqueIds = {};
-  const uniqueAndSortedObjects = [];
-
-  for (const obj of arr) {
-    const id = obj.id;
-
-    // Check for unique ID and add to unique sets if not encountered yet
-    if (!uniqueIds[id]) {
-      uniqueIds[id] = true;
-      uniqueAndSortedObjects.push(obj);
-    }
-  }
+  const uniqueAndSortedObjects = arr;
 
   // Sort the unique objects by createdAt in ascending order
   uniqueAndSortedObjects.sort((a, b) => {

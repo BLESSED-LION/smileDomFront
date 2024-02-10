@@ -22,8 +22,7 @@ const PatientsScreen = ({route}) => {
   // const { patientData, loading: ld } = usePatients(auth.currentUser.uid);
   const u = useSelector((state) => state.user.user);
   const us = u._j ? u._j : {patientsData: []}
-  const p = us.patientsData;
-  const user = filterUniqueAndSortByCreatedAt(p);
+  const p = filterUniqueAndSortByCreatedAt(us.patientsData);
   console.log("Docs patients data: ", p)
   const [loading, setLoading] = useState(false)
   console.log("Loading... ", loading)
@@ -108,7 +107,7 @@ const PatientsScreen = ({route}) => {
       {loading && <View style={{alignSelf:"center", marginTop: 50}}><ActivityIndicator /></View>}
 
       <View>
-        {user.map((user, index) => {console.log(user); return(
+        {p.map((user, index) => {console.log(user); return(
           <TouchableOpacity style={styles.userContainer} key={index} onPress={() => navigation.navigate("chatDoctor", {
             patient: user,
             messages: msgs,

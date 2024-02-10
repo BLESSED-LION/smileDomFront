@@ -24,8 +24,10 @@ const PatientChatScreen = (route) => {
     const receiverId = user.id
     const { docId, doctor, loadiing: ld } = useDoctor(receiverId)
     const [loading, setLoading] = useState(ld);
-    console.log("The doctor is: ", user)
-    console.log("The document id: ", docId)
+    const docss = useSelector((state) => state.doctors.doctors);
+    const filteredDoc = docss.find(doc => doc.id === receiverId);
+    console.log("The doctor is: ", filteredDoc)
+    console.log("The document id: ", filteredDoc.did)
     const navigation = useNavigation()
     const messagesCollectionRef = collection(db, 'messages');
     const u = useSelector((state) => state.user.user);
@@ -64,8 +66,7 @@ const PatientChatScreen = (route) => {
     }, []);
 
     const onSend = useCallback((messages = []) => {
-        console.log("Document iddddd: ", docId)
-        const uRef = doc(db, "users", docId);
+        const uRef = doc(db, "users", filteredDoc.did);
         const newData = auth.currentUser.uid
         const chatId = auth.currentUser.uid + route.route.params.user.id
         console.log("The newest messages are: ", messages);

@@ -12,7 +12,12 @@ export const useDoctors = () => {
   useEffect(() => {
     const fetchDoctors = async () => {
       const querySnapshot = await getDocs(q);
-      const docs = querySnapshot.docs.map((doc) => doc.data());
+      const docs = querySnapshot.docs.map((doc) => {
+        const data = doc.data();
+        data.did = doc.id; // Add document ID as a new property
+        return data;
+      });
+      
       setDoctors(docs);
       setLoading(false);
     };

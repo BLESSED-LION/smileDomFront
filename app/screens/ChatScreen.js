@@ -115,7 +115,7 @@ const ChatScreen = ({ route, navigation }) => {
             {call && <WebView source={{ uri: 'https://dlvryy.web.app' }} style={{ flex: 1 }} />}
             <View style={{ flex: 1, backgroundColor: "#fff", paddingBottom: 10 }}>
             {loading && <View style={{alignSelf:"center", marginTop: 50}}><ActivityIndicator /></View>}
-                {!call && <GiftedChat
+                { <GiftedChat
                     messages={messages}
                     onSend={newMessages => onSend(newMessages)}
                     text={text}
