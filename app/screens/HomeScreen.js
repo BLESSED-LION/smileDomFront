@@ -23,6 +23,7 @@ import {
 } from '@gorhom/bottom-sheet';
 import { useDoctors } from '../hooks/doctors';
 import FloatingButton from '../components/FloatingAction';
+import usePosts from '../hooks/posts';
 
 const HomeScreen = ({ navigation }) => {
   const { theme } = useTheme();
@@ -88,9 +89,9 @@ const HomeScreen = ({ navigation }) => {
   // Extracting all posts into a single array
   console.log("The doctors are: ", doctors)
   const newData = [...dummyData.Doctors, ...doctors];
-  const allPosts = newData
-    .filter((doctor) => doctor.posts)
-    .flatMap((doctor) => doctor.posts || []);
+  const allPosts = usePosts()
+
+  console.log("All posts: ", allPosts)
 
   // Sorting the posts by publishDate
   const sortedPosts = allPosts.sort((postA, postB) => {
@@ -156,15 +157,16 @@ const HomeScreen = ({ navigation }) => {
               }}
             />}
             data={sortedPosts}
-            keyExtractor={(item) => item.postId.toString()}
+            keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
               <Post
-                DoctorName={item?.DoctorName || "No Name"} // Update DoctorName based on available data
-                PostPublishDate={item.publishDate}
-                DoctorPhoto={item.DoctorPhoto || require('../../assets/SmileDom_1.png')} // Use default photo if not available
+                PostId={item.id}
+                DoctorName={item?.doctorName || "No Name"} // Update DoctorName based on available data
+                PostPublishDate={item.createdAt}
+                DoctorPhoto={item.doctorPhoto || require('../../assets/SmileDom_1.png')} // Use default photo if not available
                 postImage={item.postImage}
-                likes={item.likes.toString()}
-                comments={item.comments.toString()}
+                likes={item.likesCount}
+                comments={item.commentsCount}
                 onPress={() => navigation.navigate('doctor', { doctorInfo: item })}
                 commentPress={handlePresentModalPress}
               />

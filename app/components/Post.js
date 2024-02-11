@@ -1,13 +1,34 @@
 import { View, Text, Image, TouchableOpacity } from 'react-native'
 import { useTheme } from '../constants/theme';
-import React from 'react'
+import React, { useState } from 'react'
 import { MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
 import CompleteModal from './Modal/Modal';
+import usePost from '../hooks/post';
 
-const Post = ({ DoctorName, postImage, DoctorPhoto, likes, comments, PostPublishDate, onPress, onPressFollow, commentPress }) => {
+const Post = ({PostId, DoctorName, postImage, DoctorPhoto, likes, comments, PostPublishDate, onPress, onPressFollow, commentPress }) => {
     const { theme } = useTheme();
-    
+    const user = useSelector((state) => state.user.user);
+    const { post, loading, likePost, unLikePost, hasLikedPost } = usePost(PostId);
+    const [likesCount, setLikesCount] = useState(likes);
+    const [userLiked, setUserLiked] = useState(hasLikedPost(user._j.id));
+
+    // console.log(post)
+
+    function onLikePress() {
+        console.log(likesCount)
+        console.log(userLiked)
+        if(userLiked){
+            unLikePost(user._j.id)
+            setLikesCount(likesCount - 1)
+            setUserLiked(false)
+        }else{
+            likePost(user._j.id)
+            setLikesCount(likesCount + 1)
+            setUserLiked(true)
+        }
+    }
+
     return (
         <View
             style={{
@@ -120,8 +141,12 @@ const Post = ({ DoctorName, postImage, DoctorPhoto, likes, comments, PostPublish
                             backgroundColor: theme.colors.grey,
                             alignItems: 'center'
                         }}
+                        onPress={onLikePress}
                     >
-                        <MaterialCommunityIcons name="cards-heart-outline" size={30} color={theme.colors.Accent} />
+                        {
+                            userLiked ? <MaterialCommunityIcons name="cards-heart" size={30} color={'red'} /> :
+                            <MaterialCommunityIcons name="cards-heart-outline" size={30} color={theme.colors.Accent} />
+                        }
                         <Text
                             style={{
                                 marginLeft: 10,
@@ -130,7 +155,7 @@ const Post = ({ DoctorName, postImage, DoctorPhoto, likes, comments, PostPublish
                                 lineHeight: 17,
                                 color: 'red'
                             }}
-                        >{likes}</Text>
+                        >{likesCount}</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
