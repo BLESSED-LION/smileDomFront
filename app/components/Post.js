@@ -1,4 +1,4 @@
-import { View, Text, Image, TouchableOpacity } from 'react-native'
+import { View, Text, Image, TouchableOpacity, Share } from 'react-native'
 import { useTheme } from '../constants/theme';
 import React, { useState } from 'react'
 import { MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
@@ -24,6 +24,17 @@ const Post = ({PostId, DoctorName, postImage, DoctorPhoto, likes, comments, Post
             likePost(user._j.id)
             setLikesCount(likesCount + 1)
             setUserLiked(true)
+        }
+    }
+
+    async function sharePost(){
+        try {
+            const result = await Share.share({
+                message: `Hey, check out this post by ${DoctorName} on SmileDom`
+            })
+
+        } catch (error) {
+            alert(error.message)
         }
     }
 
@@ -182,6 +193,7 @@ const Post = ({PostId, DoctorName, postImage, DoctorPhoto, likes, comments, Post
                     </TouchableOpacity>
 
                     <TouchableOpacity
+                        onPress={sharePost}
                         style={{
                             marginRight: 10,
                             flexDirection: 'row',
