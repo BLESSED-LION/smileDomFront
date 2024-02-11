@@ -16,8 +16,6 @@ const Post = ({PostId, DoctorName, postImage, DoctorPhoto, likes, comments, Post
     // console.log(post)
 
     function onLikePress() {
-        console.log(likesCount)
-        console.log(userLiked)
         if(userLiked){
             unLikePost(user._j.id)
             setLikesCount(likesCount - 1)
@@ -54,7 +52,7 @@ const Post = ({PostId, DoctorName, postImage, DoctorPhoto, likes, comments, Post
                     <TouchableOpacity
                         onPress={onPress}
                     >
-                        <Image source={DoctorPhoto}
+                        <Image source={{ uri: DoctorPhoto }}
                             style={{
                                 height: 45,
                                 width: 45,
@@ -109,7 +107,7 @@ const Post = ({PostId, DoctorName, postImage, DoctorPhoto, likes, comments, Post
                 }}
             >
                 <Image
-                    source={postImage}
+                    source={{ uri: postImage}}
                     style={{
                         width: '100%',
                         height: '100%',
