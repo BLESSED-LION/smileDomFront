@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { doc, updateDoc, getDoc, arrayUnion, arrayRemove } from "firebase/firestore";
+import { doc, updateDoc, getDoc, getDocs, arrayUnion, arrayRemove, collection, addDoc } from "firebase/firestore";
 import { db } from '../config/firebaseConfig';
 
 const usePost = (docId) => {
@@ -40,8 +40,39 @@ const usePost = (docId) => {
   const hasLikedPost = (userId) => {
     return post && post.likes.includes(userId);
   }
+  
+  const getComments = async () => {
+    try {
+      const commentsRef = collection(db, 'posts', docId, 'comments');
+      const commentsSnapshot = await getDocs(commentsRef);
+      const comments = commentsSnapshot.docs.map(comment => {
+        return {
+          id: comment.id,
+          ...comment.data(),
+        }
+      });
+      return comments;
+    } catch (error) {
+        console.error("Error fetching comments:", error);
+        throw error;
+    }
+}
 
-  return { post, loading, likePost, unLikePost, hasLikedPost };
+  
+
+  const addComment = async(comment, userId, name) => {
+    let commentsRef = collection(db, 'posts', docId, 'comments');
+    const newComment = {
+      body: comment,
+      userId: userId,
+      name: name,
+      createdAt: new Date(),
+    }
+
+    await addDoc(commentsRef, newComment);
+  }
+
+  return { post, loading, likePost, unLikePost, hasLikedPost, getComments, addComment};
 };
 
 export default usePost;

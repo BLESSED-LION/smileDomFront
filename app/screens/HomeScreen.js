@@ -168,7 +168,6 @@ const HomeScreen = ({ navigation }) => {
                 likes={item.likesCount}
                 comments={item.commentsCount}
                 onPress={() => navigation.navigate('doctor', { doctorInfo: item })}
-                commentPress={handlePresentModalPress}
               />
             )}
             style={{
