@@ -10,7 +10,13 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from './app/config/firebaseConfig';
 import { StatusBar } from 'expo-status-bar';
 import { getMessages } from './app/store/actions';
+import { ApolloClient, InMemoryCache, ApolloProvider, gql } from '@apollo/client';
 // import { TwilioVideo } from 'react-native-twilio-video-webrtc';
+
+const client = new ApolloClient({
+  uri: 'https://flyby-router-demo.herokuapp.com/',
+  cache: new InMemoryCache(),
+});
 
 export default function App() {
   const [userRole, setUserRole] = useState('');
@@ -46,7 +52,8 @@ export default function App() {
   );
 
   return (
-    <Provider store={store}>
+    <ApolloProvider client={client}>
+      <Provider store={store}>
       <ThemeProvider >
         <StatusBar backgroundColor={'#BFD101'} />
         <NavigationContainer>
@@ -57,5 +64,6 @@ export default function App() {
         </NavigationContainer>
       </ThemeProvider>
     </Provider>
+    </ApolloProvider>
   );
 }

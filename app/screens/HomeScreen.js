@@ -161,6 +161,7 @@ const HomeScreen = ({ navigation }) => {
             renderItem={({ item }) => (
               <Post
                 PostId={item.id}
+                posterId={item.posterId}
                 DoctorName={item?.doctorName || "No Name"} // Update DoctorName based on available data
                 PostPublishDate={item.createdAt}
                 DoctorPhoto={item.doctorPhoto || require('../../assets/SmileDom_1.png')} // Use default photo if not available
