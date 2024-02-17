@@ -15,7 +15,7 @@ import { updateProfile } from 'firebase/auth';
 import { extractLastName, generateRandomGravatarUrl, generateRandomString } from '../constants/helpers';
 import Toast from 'react-native-toast-message'
 import { addDoc, collection, getFirestore, getDoc, where, query, getDocs } from "firebase/firestore";
-import { getDoctorInfo, getUserInfo } from '../store/actions';
+// import { getDoctorInfo, getUserInfo } from '../store/actions';
 import { StatusBar } from 'expo-status-bar';
 import {
   BottomSheetModal,
@@ -27,10 +27,9 @@ import usePosts from '../hooks/posts';
 
 const HomeScreen = ({ navigation }) => {
   const { theme } = useTheme();
-  const user = useSelector((state) => state.auth.user);
+  const user = useSelector((state) => state.user);
   const [userInfo, setUserInfo] = useState({});
-  const [visible, setVisible] = React.useState(typeof auth.currentUser.displayName != 'string' ? true : false);
-  const [v1, setV1] = React.useState(userInfo && userInfo.type != extractLastName(user && user.user.displayName) ? false : false);
+  const [visible, setVisible] = useState("Okay")
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const showModal = () => setVisible(false);
@@ -44,7 +43,7 @@ const HomeScreen = ({ navigation }) => {
   const bottomSheetModalRef = useRef(null)
   const snapPoints = useMemo(() => ['25%', '50%'], []);
 
-  dispatch(getDoctorInfo(doctors));
+  // dispatch(getDoctorInfo(doctors));
 
   const handlePresentModalPress = useCallback(() => {
     bottomSheetModalRef.current?.present()
@@ -81,7 +80,7 @@ const HomeScreen = ({ navigation }) => {
 
   useEffect(() => {
     const u = getUser();
-    dispatch(getUserInfo(u));
+    // dispatch(getUserInfo(u));
     setUserInfo(u)
     console.log("user info: ", userInfo)
   }, [visible])
@@ -89,6 +88,9 @@ const HomeScreen = ({ navigation }) => {
   // Extracting all posts into a single array
   console.log("The doctors are: ", doctors)
   const newData = [...dummyData.Doctors, ...doctors];
+  const allPosts = usePosts()
+
+  console.log("All posts: ", allPosts)
   const allPosts = usePosts()
 
   console.log("All posts: ", allPosts)
@@ -161,6 +163,7 @@ const HomeScreen = ({ navigation }) => {
             renderItem={({ item }) => (
               <Post
                 PostId={item.id}
+                posterId={item.posterId}
                 DoctorName={item?.doctorName || "No Name"} // Update DoctorName based on available data
                 PostPublishDate={item.createdAt}
                 DoctorPhoto={item.doctorPhoto || require('../../assets/SmileDom_1.png')} // Use default photo if not available

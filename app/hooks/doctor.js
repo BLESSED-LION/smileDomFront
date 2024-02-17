@@ -22,5 +22,26 @@ export const useDoctor = (id) => {
         fetchDoctors();
     }, []);
 
-    return {doctor, docId, loadiing};
+    const isDoctorFollower = async(userId) => {
+        if (!doctor.followers) {
+            return false;
+        }
+        return doctor.followers.includes(userId);
+    }
+
+    const followDoctor = async(userId) => {
+        const doctorRef = doc(db, "users", docId);
+        await updateDoc(doctorRef, {
+            followers: arrayUnion(userId),
+        });
+    }
+
+    const unFollowDoctor = async(userId) => {
+        const doctorRef = doc(db, "users", docId);
+        await updateDoc(doctorRef, {
+            followers: arrayRemove(userId),
+        });
+    }
+
+    return {doctor, docId, loadiing, isDoctorFollower, followDoctor, unFollowDoctor};
 };

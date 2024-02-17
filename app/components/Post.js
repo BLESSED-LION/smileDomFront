@@ -13,9 +13,11 @@ import { MaterialCommunityIcons, FontAwesome5 } from "@expo/vector-icons";
 import { useSelector } from "react-redux";
 import CompleteModal from "./Modal/Modal";
 import usePost from "../hooks/post";
+import { useDoctor } from "../hooks/doctor";
 
 const Post = ({
   PostId,
+  posterId,
   DoctorName,
   postImage,
   DoctorPhoto,
@@ -35,6 +37,8 @@ const Post = ({
     getComments,
     addComment,
   } = usePost(PostId);
+  const { doctor, isDoctorFollower, followDoctor, unFollowDoctor } = useDoctor(posterId);
+  const [isPosterFollow, setIsPosterFollower] = useState(false)
   const [likesCount, setLikesCount] = useState(likes);
   const [userLiked, setUserLiked] = useState(hasLikedPost(user._j.id));
   const [commentsCount, setCommentsCount] = useState(comments);
@@ -44,14 +48,22 @@ const Post = ({
   const [addingComment, setAddingComment] = useState(false);
 
   useEffect(() => {
+    console.log(isDoctorFollower(user._j.id)._j);
     const fetchComments = async () => {
       const comments = await getComments();
       setPostComments(comments);
     };
-    fetchComments();
+    fetchComments(user._j.id);
+    setIsPosterFollower(isDoctorFollower()._j)
   }, []);
 
-  function onPressFollow() {}
+  async function onPressFollow() {
+    if (isDoctorFollower(user._j.id)) {
+      unFollowDoctor(user._j.id);
+    } else {
+      followDoctor(user._j.id);
+    }
+  }
 
   function onLikePress() {
     if (userLiked) {
@@ -239,6 +251,36 @@ const Post = ({
             </Text>
           </TouchableOpacity>
 
+          <TouchableOpacity
+            style={{
+              marginRight: 10,
+              flexDirection: "row",
+              width: 100,
+              height: 40,
+              borderRadius: 20,
+              justifyContent: "center",
+              backgroundColor: theme.colors.grey,
+              alignItems: "center",
+            }}
+            onPress={commentPress}
+          >
+            <FontAwesome5
+              name="comment-dots"
+              size={24}
+              color={theme.colors.accountText}
+            />
+            <Text
+              style={{
+                marginLeft: 10,
+                fontSize: 14,
+                fontWeight: "bold",
+                lineHeight: 17,
+                color: theme.colors.accountText,
+              }}
+            >
+              {commentsCount}
+            </Text>
+          </TouchableOpacity>
           <TouchableOpacity
             style={{
               marginRight: 10,
