@@ -201,14 +201,14 @@ const LoginScreen = () => {
                   </View>
                 </View>
               ) : (
-                <View style={{ marginTop: 30, width: "100%" }}>
+                <View style={{ marginTop: 10, width: "100%" }}>
                   <Text
                     style={[
                       styles.title,
-                      { color: theme.colors.Text, marginBottom: 10 },
+                      { color: theme.colors.Text, marginBottom: 6 },
                     ]}
                   >
-                    Email or Phone
+                    Email
                   </Text>
                   <View
                     style={[
@@ -248,11 +248,11 @@ const LoginScreen = () => {
               )}
             </>
 
-            <View style={{ marginTop: 30, width: "100%" }}>
+            <View style={{ marginTop: 10, width: "100%" }}>
               <Text
                 style={[
                   styles.title,
-                  { color: theme.colors.Text, marginBottom: 10 },
+                  { color: theme.colors.Text, marginBottom: 6 },
                 ]}
               >
                 Password
