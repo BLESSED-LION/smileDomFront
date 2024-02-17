@@ -15,7 +15,7 @@ import { lightTheme } from '../constants/theme';
 import { useTheme } from '../constants/theme';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useDispatch } from 'react-redux';
-import { getUserInfo, loginSuccess } from '../store/actions';
+// import { getUserInfo, loginSuccess } from '../store/actions';
 import { addUser, getUser } from '../config/firebaseConfig';
 import Toast from 'react-native-toast-message';
 import { StatusBar } from 'expo-status-bar';
@@ -49,7 +49,7 @@ export default function () {
                 if (userCredential) {
                     // const creds = { id: userCredential.uid, _id: userCredential.uid, phoneNumber: userCredential.phoneNumber, type: "patient" }
                     // addUser(creds)
-                    dispatch(loginSuccess(userCredential));
+                    // dispatch(loginSuccess(userCredential));
                 }
                 setLoading(false)
                 setStay(true)

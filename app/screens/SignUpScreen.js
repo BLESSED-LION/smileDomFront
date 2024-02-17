@@ -10,15 +10,15 @@ import AppButton from '../components/AppButton'
 import { auth, app, firebaseConfig } from '../config/firebaseConfig';
 
 import { useDispatch } from 'react-redux';
-import { loginSuccess } from '../store/actions';
+// import { loginSuccess } from '../store/actions';
 import { useNavigation } from '@react-navigation/native';
-import { useFirebaseLogin } from '@itzsunny/firebase-login';
+// import { useFirebaseLogin } from '@itzsunny/firebase-login';
 
 const SignUpScreen = () => {
   const { theme } = useTheme();
   const dispatch = useDispatch();
   const navigation = useNavigation()
-  const {recaptcha,recaptchaBanner,sendOtp,verifyOtp} = useFirebaseLogin({auth: auth,firebaseConfig:firebaseConfig});
+  // const {recaptcha,recaptchaBanner,sendOtp,verifyOtp} = useFirebaseLogin({auth: auth,firebaseConfig:firebaseConfig});
 
   const handlePress = () => {
       loginWithPhoneNumber()
@@ -95,7 +95,7 @@ const SignUpScreen = () => {
             }}
           >Dom</Text></Text>
         </View>
-        {recaptcha}
+        {/* {recaptcha} */}
 
         <View
           style={{
@@ -140,7 +140,23 @@ const SignUpScreen = () => {
           alignItems: "center",
           flexDirection: "row"
         }}>
-          {recaptchaBanner}
+          {/* {recaptchaBanner} */}
+        </View>
+
+        <View style={{
+          flexDirection: "row",
+          marginTop: 10
+        }}>
+          <Text>Already have an account?</Text>
+          <TouchableOpacity
+            onPress={()=>{
+              navigation.navigate('login')
+            }}
+          >
+            <Text style={{
+              color: theme.colors.Primary
+            }}> Login</Text>
+          </TouchableOpacity>
         </View>
 
       </View>

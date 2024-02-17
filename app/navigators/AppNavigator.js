@@ -11,7 +11,8 @@ import PrinscribesScreen from '../screens/PrinscribesScreen';
 import SessonsScreen from '../screens/SessonsScreen';
 import SettingScreen from '../screens/SettingScreen';
 import { useDispatch, useSelector } from 'react-redux';
-import { getDoctorInfo, getMessages, getUserInfo, loginSuccess, logout } from '../store/actions';
+// import { getDoctorInfo, getMessages, getUserInfo, loginSuccess, logout } from '../store/actions';
+import LoginScreen from '../screens/LoginScreen';
 import SignUpScreen from '../screens/SignUpScreen';
 import { auth, db } from '../config/firebaseConfig';
 import { collection, getDoc, getDocs, query, where } from 'firebase/firestore';
@@ -131,19 +132,20 @@ const AppNavigator = ({ type, messages }) => {
   const [isLogged, setUserLogged] = useState(false);
   const {doctors} = useDoctors();
   const [user, setUser] = useState({})
-  dispatch(getDoctorInfo(doctors));
+  // dispatch(getDoctorInfo(doctors));
 
   useEffect(() => {
-    const authListener = onAuthStateChanged(auth, (user) => {
-      setUserLogged(user ? true : false);
-    });
-    return authListener;
+    // const authListener = onAuthStateChanged(auth, (user) => {
+    //   setUserLogged(user ? true : false);
+    // });
+    // return authListener;
   }, []);
 
 
   if (!isLogged) {
     return (
       <Stack.Navigator>
+        <Stack.Screen name="login" component={LoginScreen} options={{ headerShown: false }} />
         <Stack.Screen name="signUp" component={SignUpScreen} options={{ headerShown: false }} />
         <Stack.Screen name="verify" component={VerifyOtpScreen} options={{ headerShown: false }} />
       </Stack.Navigator>

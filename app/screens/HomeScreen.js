@@ -15,7 +15,7 @@ import { updateProfile } from 'firebase/auth';
 import { extractLastName, generateRandomGravatarUrl, generateRandomString } from '../constants/helpers';
 import Toast from 'react-native-toast-message'
 import { addDoc, collection, getFirestore, getDoc, where, query, getDocs } from "firebase/firestore";
-import { getDoctorInfo, getUserInfo } from '../store/actions';
+// import { getDoctorInfo, getUserInfo } from '../store/actions';
 import { StatusBar } from 'expo-status-bar';
 import {
   BottomSheetModal,
@@ -44,7 +44,7 @@ const HomeScreen = ({ navigation }) => {
   const bottomSheetModalRef = useRef(null)
   const snapPoints = useMemo(() => ['25%', '50%'], []);
 
-  dispatch(getDoctorInfo(doctors));
+  // dispatch(getDoctorInfo(doctors));
 
   const handlePresentModalPress = useCallback(() => {
     bottomSheetModalRef.current?.present()
@@ -81,7 +81,7 @@ const HomeScreen = ({ navigation }) => {
 
   useEffect(() => {
     const u = getUser();
-    dispatch(getUserInfo(u));
+    // dispatch(getUserInfo(u));
     setUserInfo(u)
     console.log("user info: ", userInfo)
   }, [visible])
