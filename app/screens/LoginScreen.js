@@ -59,12 +59,11 @@ const LoginScreen = () => {
         navigation.navigate('Home')
       }
     },
-    onError: (error) => {
-      console.error(error)
-      let errorMessage = "There was an error making request, please try again later"
-      // if(graphQLErrors){
-      //   errorMessage = graphQLErrors[0].message
-      // }
+    onError: ({graphQLErrors, networkError}) => {
+      let errorMessage = "There was an error processing your request, please try again later"
+      if(graphQLErrors){
+        errorMessage = graphQLErrors[0].message
+      }
       Toast.show({
         text1: errorMessage,
         // text2: 'Additional text can go here',
