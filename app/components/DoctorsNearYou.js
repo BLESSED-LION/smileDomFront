@@ -8,7 +8,7 @@ import { extractAllButLastName } from '../constants/helpers';
 
 const DoctorsNearYou = ({onPress}) => {
   const { theme } = useTheme();
-  const user = useSelector((state) => state.auth.user);
+  const user = useSelector((state) => state.user);
 
   function DoctorList({ photo, DoctorName, online, onPress }) {
     return (
@@ -62,7 +62,7 @@ const DoctorsNearYou = ({onPress}) => {
           color: theme.colors.Primary,
         }}
       >
-        Doctors near {auth.currentUser.displayName && extractAllButLastName(auth.currentUser.displayName)}
+        Doctors near 
         {console.log(user)}
       </Text>
 

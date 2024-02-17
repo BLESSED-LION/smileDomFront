@@ -14,15 +14,10 @@ import { useDispatch, useSelector } from 'react-redux';
 // import { getDoctorInfo, getMessages, getUserInfo, loginSuccess, logout } from '../store/actions';
 import LoginScreen from '../screens/LoginScreen';
 import SignUpScreen from '../screens/SignUpScreen';
-import { auth, db } from '../config/firebaseConfig';
-import { collection, getDoc, getDocs, query, where } from 'firebase/firestore';
-import { extractLastName } from '../constants/helpers';
-import PatientsScreen from '../screens/PatientsScreen';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
 import SettingsScreen from '../screens/SettingScreen';
 import { useDoctors } from '../hooks/doctors';
-import { useUser } from '../hooks/user';
+import { logout } from '../store/userSlice';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -68,16 +63,8 @@ const HeaderRightIcons = () => {
   const navigation = useNavigation()
 
   const handleLogout = () => {
-
-    signOut(auth)
-      .then(() => {
-        console.log("User signed out successfully!");
-        // Expo.Util.reload();
-      })
-      .catch((error) => {
-        console.error("Error signing out:", error);
-        // Handle sign-out errors
-      });
+    dispatch(logout());
+    navigation.navigate("login");
   }
 
   const { theme } = useTheme();
@@ -131,15 +118,17 @@ const AppNavigator = ({ type, messages }) => {
   const dispatch = useDispatch();
   const [isLogged, setUserLogged] = useState(false);
   const {doctors} = useDoctors();
-  const [user, setUser] = useState({})
+  const user = useSelector(state => state.user)
   // dispatch(getDoctorInfo(doctors));
 
   useEffect(() => {
-    // const authListener = onAuthStateChanged(auth, (user) => {
-    //   setUserLogged(user ? true : false);
-    // });
-    // return authListener;
-  }, []);
+    console.log(user)
+    if(user.isLoggedIn){
+      setUserLogged(true)
+    }else{
+      setUserLogged(false)
+    }
+  }, [user]);
 
 
   if (!isLogged) {

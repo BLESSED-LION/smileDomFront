@@ -27,10 +27,9 @@ import usePosts from '../hooks/posts';
 
 const HomeScreen = ({ navigation }) => {
   const { theme } = useTheme();
-  const user = useSelector((state) => state.auth.user);
+  const user = useSelector((state) => state.user);
   const [userInfo, setUserInfo] = useState({});
-  const [visible, setVisible] = React.useState(typeof auth.currentUser.displayName != 'string' ? true : false);
-  const [v1, setV1] = React.useState(userInfo && userInfo.type != extractLastName(user && user.user.displayName) ? false : false);
+  const [visible, setVisible] = useState("Okay")
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const showModal = () => setVisible(false);

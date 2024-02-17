@@ -10,7 +10,7 @@ import { ApolloClient, InMemoryCache, ApolloProvider, gql } from '@apollo/client
 // import { TwilioVideo } from 'react-native-twilio-video-webrtc';
 
 const client = new ApolloClient({
-  uri: 'https://smiledomapi-production.up.railway.app/',
+  uri: 'https://smiledomapi-production.up.railway.app/graphql',
   cache: new InMemoryCache(),
 });
 
