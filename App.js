@@ -6,11 +6,29 @@ import { store } from './app/store';
 import Toast from 'react-native-toast-message';
 import { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { ApolloClient, InMemoryCache, ApolloProvider, gql } from '@apollo/client';
+import { ApolloClient, InMemoryCache, ApolloProvider, gql, HttpLink } from '@apollo/client';
+import { setContext } from '@apollo/client/link/context';
+
 // import { TwilioVideo } from 'react-native-twilio-video-webrtc';
 
-const client = new ApolloClient({
+const httpLink = new HttpLink({
   uri: 'https://smiledomapi-production.up.railway.app/graphql',
+});
+
+const authLink = setContext((_, { headers }) => {
+  const state = store.getState();
+  const token = state.user.token;
+  console.log(token)
+  return {
+    headers: {
+      ...headers,
+      authorization: token ? `Bearer ${token}` : "",
+    }
+  }
+});
+
+const client = new ApolloClient({
+  link: authLink.concat(httpLink),
   cache: new InMemoryCache(),
 });
 

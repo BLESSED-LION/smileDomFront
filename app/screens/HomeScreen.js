@@ -91,9 +91,6 @@ const HomeScreen = ({ navigation }) => {
   const allPosts = usePosts()
 
   console.log("All posts: ", allPosts)
-  const allPosts = usePosts()
-
-  console.log("All posts: ", allPosts)
 
   // Sorting the posts by publishDate
   const sortedPosts = allPosts.sort((postA, postB) => {
