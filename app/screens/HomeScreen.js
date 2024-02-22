@@ -54,35 +54,11 @@ const HomeScreen = ({ navigation }) => {
 
   const getUser = async () => {
     const user = auth.currentUser;
-    const uid = user.uid;
-
-    const docRef = collection(db, "users");
-    const q = query(docRef, where("id", "==", uid));
-
-    try {
-      const querySnapshot = await getDocs(q);
-      if (querySnapshot) {
-        const firstDoc = querySnapshot.docs[0];
-        const firstDocData = firstDoc ? firstDoc.data() : null;
-        setUserInfo(firstDocData)
-        console.log(firstDocData)
-
-        return firstDocData
-      } else {
-        console.log("Document does not exist")
-        return null
-      }
-    } catch (error) {
-      console.error(error)
-      return null
-    }
   }
 
   useEffect(() => {
     const u = getUser();
-    // dispatch(getUserInfo(u));
     setUserInfo(u)
-    console.log("user info: ", userInfo)
   }, [visible])
 
   // Extracting all posts into a single array
@@ -156,17 +132,10 @@ const HomeScreen = ({ navigation }) => {
               }}
             />}
             data={sortedPosts}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item) => item.puid}
             renderItem={({ item }) => (
               <Post
-                PostId={item.id}
-                posterId={item.posterId}
-                DoctorName={item?.doctorName || "No Name"} // Update DoctorName based on available data
-                PostPublishDate={item.createdAt}
-                DoctorPhoto={item.doctorPhoto || require('../../assets/SmileDom_1.png')} // Use default photo if not available
-                postImage={item.postImage}
-                likes={item.likesCount}
-                comments={item.commentsCount}
+                post = {item}
                 onPress={() => navigation.navigate('doctor', { doctorInfo: item })}
               />
             )}

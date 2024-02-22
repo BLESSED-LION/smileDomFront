@@ -7,17 +7,10 @@ export const useDoctor = (id) => {
     const [docId, setDocId] = useState("")
     const [loadiing, setLoading] = useState(true)
 
-    const usersRef = collection(db, "users");
-    const q = query(usersRef, where("type", "==", "doctor"), where("id", "==", id));
-
+    
     useEffect(() => {
         const fetchDoctors = async () => {
-            const querySnapshot = await getDocs(q);
-            const doc1 = querySnapshot.docs[0]
-            const docs = doc1.data()
-            setDoctor(docs);
-            setDocId(doc1.id);
-            setLoading(false);
+            
         };
         fetchDoctors();
     }, []);
@@ -30,17 +23,11 @@ export const useDoctor = (id) => {
     }
 
     const followDoctor = async(userId) => {
-        const doctorRef = doc(db, "users", docId);
-        await updateDoc(doctorRef, {
-            followers: arrayUnion(userId),
-        });
+        
     }
 
     const unFollowDoctor = async(userId) => {
-        const doctorRef = doc(db, "users", docId);
-        await updateDoc(doctorRef, {
-            followers: arrayRemove(userId),
-        });
+        
     }
 
     return {doctor, docId, loadiing, isDoctorFollower, followDoctor, unFollowDoctor};

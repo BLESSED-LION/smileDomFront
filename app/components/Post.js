@@ -11,67 +11,47 @@ import { useTheme } from "../constants/theme";
 import React, { useState, useEffect } from "react";
 import { MaterialCommunityIcons, FontAwesome5 } from "@expo/vector-icons";
 import { useSelector } from "react-redux";
-import CompleteModal from "./Modal/Modal";
-import usePost from "../hooks/post";
 import { useDoctor } from "../hooks/doctor";
 
-const Post = ({
-  PostId,
-  posterId,
-  DoctorName,
-  postImage,
-  DoctorPhoto,
-  likes,
-  comments,
-  PostPublishDate,
-  onPress,
-}) => {
+const Post = ({ post, onPress}) => {
   const { theme } = useTheme();
   const user = useSelector((state) => state.user.user);
-  const {
-    post,
-    loading,
-    likePost,
-    unLikePost,
-    hasLikedPost,
-    getComments,
-    addComment,
-  } = usePost(PostId);
-  const { doctor, isDoctorFollower, followDoctor, unFollowDoctor } = useDoctor(posterId);
+  const { doctor, isDoctorFollower, followDoctor, unFollowDoctor } = useDoctor(1);
   const [isPosterFollow, setIsPosterFollower] = useState(false)
-  const [likesCount, setLikesCount] = useState(likes);
-  const [userLiked, setUserLiked] = useState(hasLikedPost(user._j.id));
-  const [commentsCount, setCommentsCount] = useState(comments);
+  const [likesCount, setLikesCount] = useState(post.likesCount);
+  const [userLiked, setUserLiked] = useState(post.hasLiked);
+  const [commentsCount, setCommentsCount] = useState(2);
   const [showComment, setShowComment] = useState(false);
   const [postComments, setPostComments] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [addingComment, setAddingComment] = useState(false);
+  const [postDate, setPostDate] = useState("")
 
   useEffect(() => {
-    console.log(isDoctorFollower(user._j.id)._j);
+    let date = new Date(post.createdAt);
+    setPostDate(date.toDateString());
+    
     const fetchComments = async () => {
       const comments = await getComments();
       setPostComments(comments);
     };
-    fetchComments(user._j.id);
-    setIsPosterFollower(isDoctorFollower()._j)
   }, []);
 
   async function onPressFollow() {
-    if (isDoctorFollower(user._j.id)) {
-      unFollowDoctor(user._j.id);
+    if (isDoctorFollower(user.uuid)) {
+      unFollowDoctor(user.uuid);
     } else {
-      followDoctor(user._j.id);
+      followDoctor(user.uuid);
     }
   }
 
   function onLikePress() {
     if (userLiked) {
-      unLikePost(user._j.id);
+      unLikePost(user.uuid);
       setLikesCount(likesCount - 1);
       setUserLiked(false);
     } else {
-      likePost(user._j.id);
+      likePost(user.uuid);
       setLikesCount(likesCount + 1);
       setUserLiked(true);
     }
@@ -80,7 +60,7 @@ const Post = ({
   async function sharePost() {
     try {
       const result = await Share.share({
-        message: `Hey, check out this post by ${DoctorName} on SmileDom`,
+        message: `Hey, check out this post by ${post.author.name} on SmileDom`,
       });
     } catch (error) {
       alert(error.message);
@@ -95,7 +75,7 @@ const Post = ({
     try {
       if (newComment.length > 0) {
         setAddingComment(true);
-        await addComment(newComment, user._j.id, user._j.name);
+        await addComment(newComment, user.uuid, user._j.name);
         const comments = await getComments();
         setPostComments(comments);
         setCommentsCount(comments.length);
@@ -132,8 +112,8 @@ const Post = ({
           }}
         >
           <TouchableOpacity onPress={onPress}>
-            <Image
-              source={{ uri: DoctorPhoto }}
+            { post.author.image ?<Image
+              source={{ uri: post.author.image }}
               style={{
                 height: 45,
                 width: 45,
@@ -141,6 +121,15 @@ const Post = ({
                 marginRight: 12,
               }}
             />
+            : <Image
+              source={require("../../assets/SmileDom_1.png")}
+              style={{
+                height: 45,
+                width: 45,
+                borderRadius: 50,
+                marginRight: 12,
+              }}
+            />}
           </TouchableOpacity>
           <View
             style={{
@@ -155,7 +144,7 @@ const Post = ({
                   color: theme.colors.Text,
                 }}
               >
-                {DoctorName}
+                {post.author.name}
               </Text>
             </TouchableOpacity>
             <Text
@@ -166,7 +155,7 @@ const Post = ({
               }}
             >
               {" "}
-              {PostPublishDate}{" "}
+              {postDate}{" "}
             </Text>
           </View>
         </View>
@@ -191,7 +180,7 @@ const Post = ({
         }}
       >
         <Image
-          source={{ uri: postImage }}
+          source={{ uri: post.image }}
           style={{
             width: "100%",
             height: "100%",
@@ -251,36 +240,6 @@ const Post = ({
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={{
-              marginRight: 10,
-              flexDirection: "row",
-              width: 100,
-              height: 40,
-              borderRadius: 20,
-              justifyContent: "center",
-              backgroundColor: theme.colors.grey,
-              alignItems: "center",
-            }}
-            onPress={commentPress}
-          >
-            <FontAwesome5
-              name="comment-dots"
-              size={24}
-              color={theme.colors.accountText}
-            />
-            <Text
-              style={{
-                marginLeft: 10,
-                fontSize: 14,
-                fontWeight: "bold",
-                lineHeight: 17,
-                color: theme.colors.accountText,
-              }}
-            >
-              {commentsCount}
-            </Text>
-          </TouchableOpacity>
           <TouchableOpacity
             style={{
               marginRight: 10,

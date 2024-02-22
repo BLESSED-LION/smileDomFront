@@ -1,36 +1,38 @@
 import { useState, useEffect } from 'react';
-import { collection, doc, getDocs, query } from "firebase/firestore";
-import { db } from '../config/firebaseConfig';
+import { useQuery, gql } from '@apollo/client';
+
+const GET_ALL_POSTS = gql`
+  query GetAllPosts {
+    getAllPosts {
+      id
+      title
+      puid,
+      image,
+      content,
+      likesCount
+      hasLiked,
+      hasFollowedAuthor,
+      likesCount
+      createdAt
+      author {
+        id
+        name
+        image
+      }
+    }
+  }
+`;
 
 const usePosts = () => {
   const [posts, setPosts] = useState([]);
+  
+  const { loading: postsLoading, error: postsError, data: postsData } = useQuery(GET_ALL_POSTS);
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      const postsRef = collection(db, 'posts');
-      const postSnapshot = await getDocs(postsRef);
-
-      const docs = await Promise.all(postSnapshot.docs.map(async postDoc => {
-        const postData = postDoc.data();
-        postData.id = postDoc.id;
-        postData.createdAt = postData.publishDate.toDate().toDateString();
-
-        // Fetch comments count for each post
-        const commentsRef = collection(db, 'posts', postData.id, 'comments');
-        const commentsSnapshot = await getDocs(commentsRef);
-        postData.commentsCount = commentsSnapshot.size;
-
-        // count likes array
-        postData.likesCount = postData.likes.length;
-
-        return postData;
-      }));
-
-      setPosts(docs);
+    if(!postsLoading && !postsError){
+      setPosts(postsData.getAllPosts)
     }
-
-    fetchPosts();
-  }, []);
+  })
 
   return posts;
 };
