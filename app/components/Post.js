@@ -5,13 +5,36 @@ import {
   TouchableOpacity,
   Share,
   TextInput,
-  Button,
+  KeyboardAvoidingView
 } from "react-native";
 import { useTheme } from "../constants/theme";
 import React, { useState, useEffect } from "react";
 import { MaterialCommunityIcons, FontAwesome5 } from "@expo/vector-icons";
 import { useSelector } from "react-redux";
 import { useDoctor } from "../hooks/doctor";
+import { gql, useQuery, useMutation } from "@apollo/client";
+
+const GET_COMMENTS = gql`
+  query GetComments($postId: ID!) {
+    getComments(postId: $postId) {
+      content,
+      createdAt
+      user {
+        id,
+        email
+      }
+    }
+  }
+`
+
+const CREATE_COMMENT = gql`
+  mutation CreateComment($puid: ID!, $content: String!) {
+    createComment(puid: $puid, content: $content) {
+      id
+    }
+  }
+`
+
 
 const Post = ({ post, onPress}) => {
   const { theme } = useTheme();
@@ -20,22 +43,26 @@ const Post = ({ post, onPress}) => {
   const [isPosterFollow, setIsPosterFollower] = useState(false)
   const [likesCount, setLikesCount] = useState(post.likesCount);
   const [userLiked, setUserLiked] = useState(post.hasLiked);
-  const [commentsCount, setCommentsCount] = useState(2);
+  const [addingComment, setAddingComment] = useState(false);
+  const [postDate, setPostDate] = useState("")
+
+  const [commentsCount, setCommentsCount] = useState(0);
   const [showComment, setShowComment] = useState(false);
   const [postComments, setPostComments] = useState([]);
   const [newComment, setNewComment] = useState("");
-  const [addingComment, setAddingComment] = useState(false);
-  const [postDate, setPostDate] = useState("")
+
+  const { loading: commentsLoading, error: commentsError, data: commentsData } = useQuery(GET_COMMENTS, {variables: {postId: post.puid}});
+  const [createComment, { error: mutationError }] = useMutation(CREATE_COMMENT);
 
   useEffect(() => {
     let date = new Date(post.createdAt);
     setPostDate(date.toDateString());
-    
-    const fetchComments = async () => {
-      const comments = await getComments();
-      setPostComments(comments);
-    };
-  }, []);
+
+    if(!commentsLoading && !commentsError){
+      setPostComments(commentsData.getComments)
+      setCommentsCount(commentsData.getComments.length)
+    }
+  }, [commentsData]);
 
   async function onPressFollow() {
     if (isDoctorFollower(user.uuid)) {
@@ -75,14 +102,13 @@ const Post = ({ post, onPress}) => {
     try {
       if (newComment.length > 0) {
         setAddingComment(true);
-        await addComment(newComment, user.uuid, user._j.name);
-        const comments = await getComments();
-        setPostComments(comments);
-        setCommentsCount(comments.length);
+        await createComment({ variables: { puid: post.puid, content: newComment } });
         setNewComment("");
+        setCommentsCount(commentsCount + 1);
+        setPostComments([...postComments, { content: newComment, user: { email: user.email } }]);
       }
     } catch (error) {
-      console.error("Error adding comment: ", error);
+      //
     } finally {
       setAddingComment(false);
     }
@@ -313,8 +339,8 @@ const Post = ({ post, onPress}) => {
           <Text>Comments:</Text>
           {postComments.map((comment, i) => (
             <View key={i} style={{ margin: 10 }}>
-              <Text style={{ fontWeight: "bold" }}>{comment.name}</Text>
-              <Text>{comment.body}</Text>
+              <Text style={{ fontWeight: "bold" }}>{comment.user.email}</Text>
+              <Text>{comment.content}</Text>
             </View>
           ))}
 
