@@ -74,7 +74,7 @@ const Post = ({ post, onPress}) => {
   }, [commentsData]);
 
   async function onPressFollow() {
-    if (isDoctorFollower(user.uuid)) {
+    if (post.hasFollowedAuthor) {
       unFollowDoctor(user.uuid);
     } else {
       followDoctor(user.uuid);
@@ -127,7 +127,7 @@ const Post = ({ post, onPress}) => {
   return (
     <View
       style={{
-        height: 431,
+        minHeight: 431,
         width: "100%",
         marginVertical: 10,
       }}
@@ -195,18 +195,31 @@ const Post = ({ post, onPress}) => {
             </Text>
           </View>
         </View>
-
-        <TouchableOpacity onPress={onPressFollow}>
-          <Text
-            style={{
-              fontSize: 18,
-              fontWeight: "bold",
-              color: theme.colors.tabActive,
-            }}
-          >
-            + Follow
-          </Text>
-        </TouchableOpacity>
+        { !user.hasFollowedAuthor ?
+          <TouchableOpacity onPress={onPressFollow}>
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: "bold",
+                color: theme.colors.tabActive,
+              }}
+            >
+              + Follow
+            </Text>
+          </TouchableOpacity>
+          : 
+          <TouchableOpacity onPress={onPressFollow}>
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: "bold",
+                color: theme.colors.tabActive,
+              }}
+            >
+             Unfollow
+            </Text>
+          </TouchableOpacity>
+        }
       </View>
       <View
         style={{
@@ -219,7 +232,7 @@ const Post = ({ post, onPress}) => {
           source={{ uri: post.image }}
           style={{
             width: "100%",
-            height: "100%",
+            height: 390,
             backgroundColor: theme.colors.Black,
           }}
           resizeMode="cover"

@@ -29,7 +29,7 @@ const HomeScreen = ({ navigation }) => {
   const { theme } = useTheme();
   const user = useSelector((state) => state.user);
   const [userInfo, setUserInfo] = useState({});
-  const [visible, setVisible] = useState("Okay")
+  const [visible, setVisible] = useState(false)
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const showModal = () => setVisible(false);
@@ -74,8 +74,6 @@ const HomeScreen = ({ navigation }) => {
     const dateB = new Date(postB.publishDate);
     return dateB - dateA; // Sort by descending order (most recent first)
   });
-
-  console.log("All posts: ", sortedPosts);
 
   const handlePress = async () => {
     const u = await getUser()

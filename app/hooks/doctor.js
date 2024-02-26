@@ -23,11 +23,11 @@ export const useDoctor = (id) => {
     }
 
     const followDoctor = async(userId) => {
-        
+        // TODO: Follow the doctor
     }
 
     const unFollowDoctor = async(userId) => {
-        
+        // TODO: Unfollow the doctor
     }
 
     return {doctor, docId, loadiing, isDoctorFollower, followDoctor, unFollowDoctor};
