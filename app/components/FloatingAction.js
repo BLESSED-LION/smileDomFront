@@ -1,30 +1,30 @@
 import React from 'react';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons'; // You can use any icon library here
+import { lightTheme } from '../constants/theme';
+import { useNavigation } from '@react-navigation/native';
 
 const FloatingButton = () => {
+  const navigation = useNavigation();
+  function onPress() {
+    navigation.navigate('createPost');
+    console.log('Floating button pressed');
+  }
   return (
-    <View style={styles.container}>
-      <TouchableOpacity style={styles.button}>
-        <Ionicons name="ios-add" size={36} color="white" />
+    <View>
+      <TouchableOpacity style={styles.button} onPress={()=>{onPress()}}>
+        <Ionicons name="add" size={36} color="white" />
       </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    alignItems: 'flex-end',
-    marginBottom: 16,
-    marginRight: 16,
-  },
   button: {
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: 'blue',
+    backgroundColor: lightTheme.colors.Primary,
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 8,

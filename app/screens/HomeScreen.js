@@ -122,7 +122,10 @@ const HomeScreen = ({ navigation }) => {
   return (
     <PaperProvider>
       <BottomSheetModalProvider>
-        <Portal>
+        <Portal style={{ flex: 1}}>
+          <View style={{ position: 'absolute', bottom: 20, zIndex: 1000, right: 20}}>
+            <FloatingButton/>
+          </View>
           <FlatList
             ListHeaderComponent={<DoctorsNearYou
               onPress={(doctorInfo) => {
@@ -172,7 +175,6 @@ const HomeScreen = ({ navigation }) => {
           </View>
         </BottomSheetModal>
       </BottomSheetModalProvider>
-      <FloatingButton />
     </PaperProvider>
   )
 }
@@ -180,6 +182,12 @@ const HomeScreen = ({ navigation }) => {
 export default HomeScreen
 
 const styles = StyleSheet.create({
+  portal: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
   modal: {
     backgroundColor: "white",
     padding: 20,
