@@ -35,6 +35,14 @@ const CREATE_COMMENT = gql`
   }
 `
 
+const CREATE_LIKE = gql`
+  mutation CreateLike($puid: String!) {
+    createLike(puid: $puid) {
+      id
+    }
+  }
+`
+
 
 const Post = ({ post, onPress}) => {
   const { theme } = useTheme();
@@ -53,6 +61,7 @@ const Post = ({ post, onPress}) => {
 
   const { loading: commentsLoading, error: commentsError, data: commentsData } = useQuery(GET_COMMENTS, {variables: {postId: post.puid}});
   const [createComment, { error: mutationError }] = useMutation(CREATE_COMMENT);
+  const [createLike, {error: mutationLikeError}] = useMutation(CREATE_LIKE)
 
   useEffect(() => {
     let date = new Date(post.createdAt);
@@ -72,15 +81,16 @@ const Post = ({ post, onPress}) => {
     }
   }
 
-  function onLikePress() {
+  async function onLikePress()  {
     if (userLiked) {
-      unLikePost(user.uuid);
+      //TODO: add unlike post
+      // await createLike({ variables: { puid: post.puid } });
       setLikesCount(likesCount - 1);
       setUserLiked(false);
     } else {
-      likePost(user.uuid);
       setLikesCount(likesCount + 1);
       setUserLiked(true);
+      await createLike({ variables: { puid: post.puid } });
     }
   }
 
