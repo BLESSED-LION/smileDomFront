@@ -5,82 +5,99 @@ import {
   TouchableOpacity,
   Share,
   TextInput,
-  Button,
+  KeyboardAvoidingView
 } from "react-native";
 import { useTheme } from "../constants/theme";
 import React, { useState, useEffect } from "react";
 import { MaterialCommunityIcons, FontAwesome5 } from "@expo/vector-icons";
 import { useSelector } from "react-redux";
-import CompleteModal from "./Modal/Modal";
-import usePost from "../hooks/post";
 import { useDoctor } from "../hooks/doctor";
+import { gql, useQuery, useMutation } from "@apollo/client";
 
-const Post = ({
-  PostId,
-  posterId,
-  DoctorName,
-  postImage,
-  DoctorPhoto,
-  likes,
-  comments,
-  PostPublishDate,
-  onPress,
-}) => {
+const GET_COMMENTS = gql`
+  query GetComments($postId: ID!) {
+    getComments(postId: $postId) {
+      content,
+      createdAt
+      user {
+        id,
+        email
+      }
+    }
+  }
+`
+
+const CREATE_COMMENT = gql`
+  mutation CreateComment($puid: ID!, $content: String!) {
+    createComment(puid: $puid, content: $content) {
+      id
+    }
+  }
+`
+
+const CREATE_LIKE = gql`
+  mutation CreateLike($puid: String!) {
+    createLike(puid: $puid) {
+      id
+    }
+  }
+`
+
+
+const Post = ({ post, onPress}) => {
   const { theme } = useTheme();
   const user = useSelector((state) => state.user.user);
-  const {
-    post,
-    loading,
-    likePost,
-    unLikePost,
-    hasLikedPost,
-    getComments,
-    addComment,
-  } = usePost(PostId);
-  const { doctor, isDoctorFollower, followDoctor, unFollowDoctor } = useDoctor(posterId);
+  const { doctor, isDoctorFollower, followDoctor, unFollowDoctor } = useDoctor(1);
   const [isPosterFollow, setIsPosterFollower] = useState(false)
-  const [likesCount, setLikesCount] = useState(likes);
-  const [userLiked, setUserLiked] = useState(hasLikedPost(user._j.id));
-  const [commentsCount, setCommentsCount] = useState(comments);
+  const [likesCount, setLikesCount] = useState(post.likesCount);
+  const [userLiked, setUserLiked] = useState(post.hasLiked);
+  const [addingComment, setAddingComment] = useState(false);
+  const [postDate, setPostDate] = useState("")
+
+  const [commentsCount, setCommentsCount] = useState(0);
   const [showComment, setShowComment] = useState(false);
   const [postComments, setPostComments] = useState([]);
   const [newComment, setNewComment] = useState("");
-  const [addingComment, setAddingComment] = useState(false);
+
+  const { loading: commentsLoading, error: commentsError, data: commentsData } = useQuery(GET_COMMENTS, {variables: {postId: post.puid}});
+  const [createComment, { error: mutationError }] = useMutation(CREATE_COMMENT);
+  const [createLike, {error: mutationLikeError}] = useMutation(CREATE_LIKE)
 
   useEffect(() => {
-    console.log(isDoctorFollower(user._j.id)._j);
-    const fetchComments = async () => {
-      const comments = await getComments();
-      setPostComments(comments);
-    };
-    fetchComments(user._j.id);
-    setIsPosterFollower(isDoctorFollower()._j)
-  }, []);
+    let date = new Date(post.createdAt);
+    setPostDate(date.toDateString());
+
+    if(!commentsLoading && !commentsError){
+      setPostComments(commentsData.getComments)
+      setCommentsCount(commentsData.getComments.length)
+    }
+  }, [commentsData]);
 
   async function onPressFollow() {
-    if (isDoctorFollower(user._j.id)) {
-      unFollowDoctor(user._j.id);
+    if (post.hasFollowedAuthor) {
+      unFollowDoctor(user.uuid);
     } else {
-      followDoctor(user._j.id);
+      followDoctor(user.uuid);
     }
   }
 
-  function onLikePress() {
+  async function onLikePress()  {
     if (userLiked) {
-      unLikePost(user._j.id);
+      //TODO: add unlike post
+      // await createLike({ variables: { puid: post.puid } });
       setLikesCount(likesCount - 1);
       setUserLiked(false);
     } else {
-      likePost(user._j.id);
       setLikesCount(likesCount + 1);
       setUserLiked(true);
+      await createLike({ variables: { puid: post.puid } });
     }
   }
 
   async function sharePost() {
     try {
       const result = await Share.share({
-        message: `Hey, check out this post by ${DoctorName} on SmileDom`,
+        message: `Hey, check out this post by ${post.author.name} on SmileDom`,
       });
     } catch (error) {
       alert(error.message);
@@ -95,14 +112,13 @@ const Post = ({
     try {
       if (newComment.length > 0) {
         setAddingComment(true);
-        await addComment(newComment, user._j.id, user._j.name);
-        const comments = await getComments();
-        setPostComments(comments);
-        setCommentsCount(comments.length);
+        await createComment({ variables: { puid: post.puid, content: newComment } });
         setNewComment("");
+        setCommentsCount(commentsCount + 1);
+        setPostComments([...postComments, { content: newComment, user: { email: user.email } }]);
       }
     } catch (error) {
-      console.error("Error adding comment: ", error);
+      //
     } finally {
       setAddingComment(false);
     }
@@ -111,7 +127,7 @@ const Post = ({
   return (
     <View
       style={{
-        height: 431,
+        minHeight: 431,
         width: "100%",
         marginVertical: 10,
       }}
@@ -132,8 +148,8 @@ const Post = ({
           }}
         >
           <TouchableOpacity onPress={onPress}>
-            <Image
-              source={{ uri: DoctorPhoto }}
+            { post.author.image ?<Image
+              source={{ uri: post.author.image }}
               style={{
                 height: 45,
                 width: 45,
@@ -141,6 +157,15 @@ const Post = ({
                 marginRight: 12,
               }}
             />
+            : <Image
+              source={require("../../assets/SmileDom_1.png")}
+              style={{
+                height: 45,
+                width: 45,
+                borderRadius: 50,
+                marginRight: 12,
+              }}
+            />}
           </TouchableOpacity>
           <View
             style={{
@@ -155,7 +180,7 @@ const Post = ({
                   color: theme.colors.Text,
                 }}
               >
-                {DoctorName}
+                {post.author.name}
               </Text>
             </TouchableOpacity>
             <Text
@@ -166,22 +191,35 @@ const Post = ({
               }}
             >
               {" "}
-              {PostPublishDate}{" "}
+              {postDate}{" "}
             </Text>
           </View>
         </View>
-
-        <TouchableOpacity onPress={onPressFollow}>
-          <Text
-            style={{
-              fontSize: 18,
-              fontWeight: "bold",
-              color: theme.colors.tabActive,
-            }}
-          >
-            + Follow
-          </Text>
-        </TouchableOpacity>
+        { !user.hasFollowedAuthor ?
+          <TouchableOpacity onPress={onPressFollow}>
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: "bold",
+                color: theme.colors.tabActive,
+              }}
+            >
+              + Follow
+            </Text>
+          </TouchableOpacity>
+          : 
+          <TouchableOpacity onPress={onPressFollow}>
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: "bold",
+                color: theme.colors.tabActive,
+              }}
+            >
+             Unfollow
+            </Text>
+          </TouchableOpacity>
+        }
       </View>
       <View
         style={{
@@ -191,10 +229,10 @@ const Post = ({
         }}
       >
         <Image
-          source={{ uri: postImage }}
+          source={{ uri: post.image }}
           style={{
             width: "100%",
-            height: "100%",
+            height: 390,
             backgroundColor: theme.colors.Black,
           }}
           resizeMode="cover"
@@ -354,8 +392,8 @@ const Post = ({
           <Text>Comments:</Text>
           {postComments.map((comment, i) => (
             <View key={i} style={{ margin: 10 }}>
-              <Text style={{ fontWeight: "bold" }}>{comment.name}</Text>
-              <Text>{comment.body}</Text>
+              <Text style={{ fontWeight: "bold" }}>{comment.user.email}</Text>
+              <Text>{comment.content}</Text>
             </View>
           ))}
 

@@ -29,7 +29,7 @@ const HomeScreen = ({ navigation }) => {
   const { theme } = useTheme();
   const user = useSelector((state) => state.user);
   const [userInfo, setUserInfo] = useState({});
-  const [visible, setVisible] = useState("Okay")
+  const [visible, setVisible] = useState(false)
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const showModal = () => setVisible(false);
@@ -54,43 +54,16 @@ const HomeScreen = ({ navigation }) => {
 
   const getUser = async () => {
     const user = auth.currentUser;
-    const uid = user.uid;
-
-    const docRef = collection(db, "users");
-    const q = query(docRef, where("id", "==", uid));
-
-    try {
-      const querySnapshot = await getDocs(q);
-      if (querySnapshot) {
-        const firstDoc = querySnapshot.docs[0];
-        const firstDocData = firstDoc ? firstDoc.data() : null;
-        setUserInfo(firstDocData)
-        console.log(firstDocData)
-
-        return firstDocData
-      } else {
-        console.log("Document does not exist")
-        return null
-      }
-    } catch (error) {
-      console.error(error)
-      return null
-    }
   }
 
   useEffect(() => {
     const u = getUser();
-    // dispatch(getUserInfo(u));
     setUserInfo(u)
-    console.log("user info: ", userInfo)
   }, [visible])
 
   // Extracting all posts into a single array
   console.log("The doctors are: ", doctors)
   const newData = [...dummyData.Doctors, ...doctors];
-  const allPosts = usePosts()
-
-  console.log("All posts: ", allPosts)
   const allPosts = usePosts()
 
   console.log("All posts: ", allPosts)
@@ -101,8 +74,6 @@ const HomeScreen = ({ navigation }) => {
     const dateB = new Date(postB.publishDate);
     return dateB - dateA; // Sort by descending order (most recent first)
   });
-
-  console.log("All posts: ", sortedPosts);
 
   const handlePress = async () => {
     const u = await getUser()
@@ -151,7 +122,10 @@ const HomeScreen = ({ navigation }) => {
   return (
     <PaperProvider>
       <BottomSheetModalProvider>
-        <Portal>
+        <Portal style={{ flex: 1}}>
+          <View style={{ position: 'absolute', bottom: 20, zIndex: 1000, right: 20}}>
+            <FloatingButton/>
+          </View>
           <FlatList
             ListHeaderComponent={<DoctorsNearYou
               onPress={(doctorInfo) => {
@@ -159,17 +133,10 @@ const HomeScreen = ({ navigation }) => {
               }}
             />}
             data={sortedPosts}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item) => item.puid}
             renderItem={({ item }) => (
               <Post
-                PostId={item.id}
-                posterId={item.posterId}
-                DoctorName={item?.doctorName || "No Name"} // Update DoctorName based on available data
-                PostPublishDate={item.createdAt}
-                DoctorPhoto={item.doctorPhoto || require('../../assets/SmileDom_1.png')} // Use default photo if not available
-                postImage={item.postImage}
-                likes={item.likesCount}
-                comments={item.commentsCount}
+                post = {item}
                 onPress={() => navigation.navigate('doctor', { doctorInfo: item })}
               />
             )}
@@ -208,7 +175,6 @@ const HomeScreen = ({ navigation }) => {
           </View>
         </BottomSheetModal>
       </BottomSheetModalProvider>
-      <FloatingButton />
     </PaperProvider>
   )
 }
@@ -216,6 +182,12 @@ const HomeScreen = ({ navigation }) => {
 export default HomeScreen
 
 const styles = StyleSheet.create({
+  portal: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
   modal: {
     backgroundColor: "white",
     padding: 20,

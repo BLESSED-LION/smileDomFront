@@ -64,7 +64,7 @@ const HeaderRightIcons = () => {
 
   const handleLogout = () => {
     dispatch(logout());
-    navigation.navigate("login");
+    navigation.navigate("login"); 
   }
 
   const { theme } = useTheme();
@@ -122,7 +122,6 @@ const AppNavigator = ({ type, messages }) => {
   // dispatch(getDoctorInfo(doctors));
 
   useEffect(() => {
-    console.log(user)
     if(user.isLoggedIn){
       setUserLogged(true)
     }else{

@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  ScrollView
 } from "react-native";
 import React, { useState, useRef, useContext } from "react";
 import Toast from "react-native-toast-message";
@@ -119,233 +120,230 @@ const SignUpScreen = () => {
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS == "ios" ? "padding" : "height"}
-      style={{ flex: 1 }}
-    >
-      <View
-        style={[styles.container, { backgroundColor: theme.colors.Background }]}
+    <ScrollView>
+      <KeyboardAvoidingView
+        behavior={Platform.OS == "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
       >
-        <StatusBar />
-        <View>
-          <Text style={[styles.intro, { color: theme.colors.Primary }]}>
-            Welcome to
-            <Text style={{ color: theme.colors.tabActive, fontWeight: "bold" }}>
-              {" "}
-              SmileDom.
-            </Text>
-            Yorem ipsum dolor sit amet, consectetur adipiscing
-          </Text>
-
-          <View style={[styles.iconContainer]}>
-            <Image
-              source={require("../../assets/icon.png")}
-              style={{
-                width: 99,
-                height: 99,
-              }}
-            />
-            <Text
-              style={{
-                fontSize: 20,
-                fontWeight: "bold",
-                color: theme.colors.Primary,
-              }}
-            >
-              Smile
-              <Text
+        <View
+          style={[styles.container, { backgroundColor: theme.colors.Background }]}
+        >
+          <StatusBar />
+          <View >
+            
+            <View style={[styles.iconContainer]}>
+              <Image
+                source={require("../../assets/icon.png")}
                 style={{
-                  color: theme.colors.tabActive,
+                  marginTop: 10,
+                  width: 99,
+                  height: 99,
                 }}
-              >
-                Dom
-              </Text>
-            </Text>
-          </View>
-          {/* {recaptcha} */}
-
-          <View
-            style={{
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            {/*usernmame input */}
-            <View style={{ marginTop: 20, width: "100%" }}>
-              <Text style={[styles.title, { color: theme.colors.Text, marginBottom: 6 }]}>
-                Username
-              </Text>
-              <View
-                style={[
-                  styles.countrySelect,
-                  { borderColor: theme.colors.grey2 },
-                ]}
-              >
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <TextInput
-                    placeholder="Enter username"
-                    onChangeText={(text) => setUsername(text)}
-                    style={{
-                      width: "100%",
-                    }}
-                  />
-                </View>
-              </View>
-            </View>
-
-            {/*email input */}
-            <View style={{ marginTop: 20, marginBottom: 20, width: "100%" }}>
-              <Text style={[styles.title, { color: theme.colors.Text, marginBottom: 6 }]}>
-                Email
-              </Text>
-              <View
-                style={[
-                  styles.countrySelect,
-                  { borderColor: theme.colors.grey2 },
-                ]}
-              >
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <TextInput
-                    placeholder="Enter your email"
-                    keyboardType="email-address"
-                    onChangeText={(text) => setEmail(text)}
-                    style={{
-                      width: "100%",
-                    }}
-                  />
-                </View>
-              </View>
-            </View>
-
-            <LoginInput setCountry={setCountry} />
-            {/* <InputLogin setPhoneNumber={setPhoneNumber}/> */}
-            <View style={{ marginTop: 20, width: "100%" }}>
-              <Text style={[styles.title, { color: theme.colors.Text, marginBottom: 6 }]}>
-                Phone
-              </Text>
-              <View
-                style={[
-                  styles.countrySelect,
-                  { borderColor: theme.colors.grey2 },
-                ]}
-              >
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <TextInput
-                    placeholder="Enter phone number"
-                    onChangeText={handleTextChange}
-                    style={{
-                      width: "100%",
-                    }}
-                  />
-                </View>
-              </View>
-            </View>
-
-            {/*password input */}
-            <View style={{ marginTop: 20, width: "100%" }}>
-              <Text style={[styles.title, { color: theme.colors.Text, marginBottom: 6 }]}>
-                Password
-              </Text>
-              <View
-                style={[
-                  styles.countrySelect,
-                  { borderColor: theme.colors.grey2 },
-                ]}
-              >
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <TextInput
-                    placeholder="Enter password"
-                    secureTextEntry={true}
-                    onChangeText={(text) => setPassword(text)}
-                    style={{
-                      width: "100%",
-                    }}
-                  />
-                </View>
-              </View>
-            </View>
-
-            {/*confirm password input */}
-            <View style={{ marginTop: 20, width: "100%" }}>
-              <Text style={[styles.title, { color: theme.colors.Text, marginBottom: 6 }]}>
-                Confirm Password
-              </Text>
-              <View
-                style={[
-                  styles.countrySelect,
-                  { borderColor: theme.colors.grey2 },
-                ]}
-              >
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <TextInput
-                    placeholder="Enter password"
-                    secureTextEntry={true}
-                    onChangeText={(text) => setConfirmPassword(text)}
-                    style={{
-                      width: "100%",
-                    }}
-                  />
-                </View>
-              </View>
-            </View>
-          </View>
-
-          <View
-            style={{
-              marginTop: 30,
-            }}
-          >
-            <View>
-              {!loading ? (
-                <AppButton
-                  title="Register"
-                  bgColor={theme.colors.Primary}
-                  color={theme.colors.White}
-                  // onPress={() => loginWithPhoneNumber()}
-                  onPress={handlePress}
-                />
-              ) : (
-                <ActivityIndicator size="large" color={theme.colors.Primary} />
-              )}
-            </View>
-          </View>
-
-          <View
-            style={{
-              justifyContent: "center",
-              alignItems: "center",
-              flexDirection: "row",
-            }}
-          >
-            {/* {recaptchaBanner} */}
-          </View>
-
-          <View
-            style={{
-              flexDirection: "row",
-              marginTop: 10,
-            }}
-          >
-            <Text>Already have an account?</Text>
-            <TouchableOpacity
-              onPress={() => {
-                navigation.navigate("login");
-              }}
-            >
+              />
               <Text
                 style={{
+                  fontSize: 20,
+                  fontWeight: "bold",
                   color: theme.colors.Primary,
                 }}
               >
-                {" "}
-                Login
+                Smile
+                <Text
+                  style={{
+                    color: theme.colors.tabActive,
+                  }}
+                >
+                  Dom
+                </Text>
               </Text>
-            </TouchableOpacity>
+              <Text style={{marginTop:10, fontSize: 20, color: theme.colors.Primary}}>Create Account</Text>
+            </View>
+            {/* {recaptcha} */}
+
+            <View
+              style={{
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              {/*usernmame input */}
+              <View style={{ marginTop: 10, width: "100%" }}>
+                <Text style={[styles.title, { color: theme.colors.Text, marginBottom: 6 }]}>
+                  Username
+                </Text>
+                <View
+                  style={[
+                    styles.countrySelect,
+                    { borderColor: theme.colors.grey2 },
+                  ]}
+                >
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <TextInput
+                      placeholder="Enter username"
+                      onChangeText={(text) => setUsername(text)}
+                      style={{
+                        width: "100%",
+                      }}
+                    />
+                  </View>
+                </View>
+              </View>
+
+              {/*email input */}
+              <View style={{ marginTop: 20, marginBottom: 20, width: "100%" }}>
+                <Text style={[styles.title, { color: theme.colors.Text, marginBottom: 6 }]}>
+                  Email
+                </Text>
+                <View
+                  style={[
+                    styles.countrySelect,
+                    { borderColor: theme.colors.grey2 },
+                  ]}
+                >
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <TextInput
+                      placeholder="Enter your email"
+                      keyboardType="email-address"
+                      onChangeText={(text) => setEmail(text)}
+                      style={{
+                        width: "100%",
+                      }}
+                    />
+                  </View>
+                </View>
+              </View>
+
+              <LoginInput setCountry={setCountry} />
+              {/* <InputLogin setPhoneNumber={setPhoneNumber}/> */}
+              <View style={{ marginTop: 20, width: "100%" }}>
+                <Text style={[styles.title, { color: theme.colors.Text, marginBottom: 6 }]}>
+                  Phone
+                </Text>
+                <View
+                  style={[
+                    styles.countrySelect,
+                    { borderColor: theme.colors.grey2 },
+                  ]}
+                >
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <TextInput
+                      placeholder="Enter phone number"
+                      onChangeText={handleTextChange}
+                      style={{
+                        width: "100%",
+                      }}
+                    />
+                  </View>
+                </View>
+              </View>
+
+              {/*password input */}
+              <View style={{ marginTop: 20, width: "100%" }}>
+                <Text style={[styles.title, { color: theme.colors.Text, marginBottom: 6 }]}>
+                  Password
+                </Text>
+                <View
+                  style={[
+                    styles.countrySelect,
+                    { borderColor: theme.colors.grey2 },
+                  ]}
+                >
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <TextInput
+                      placeholder="Enter password"
+                      secureTextEntry={true}
+                      onChangeText={(text) => setPassword(text)}
+                      style={{
+                        width: "100%",
+                      }}
+                    />
+                  </View>
+                </View>
+              </View>
+
+              {/*confirm password input */}
+              <View style={{ marginTop: 20, width: "100%" }}>
+                <Text style={[styles.title, { color: theme.colors.Text, marginBottom: 6 }]}>
+                  Confirm Password
+                </Text>
+                <View
+                  style={[
+                    styles.countrySelect,
+                    { borderColor: theme.colors.grey2 },
+                  ]}
+                >
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <TextInput
+                      placeholder="Enter password"
+                      secureTextEntry={true}
+                      onChangeText={(text) => setConfirmPassword(text)}
+                      style={{
+                        width: "100%",
+                      }}
+                    />
+                  </View>
+                </View>
+              </View>
+            </View>
+
+            <View
+              style={{
+                marginTop: 30,
+              }}
+            >
+              <View>
+                {!loading ? (
+                  <AppButton
+                    title="Register"
+                    bgColor={theme.colors.Primary}
+                    color={theme.colors.White}
+                    // onPress={() => loginWithPhoneNumber()}
+                    onPress={handlePress}
+                  />
+                ) : (
+                  <ActivityIndicator size="large" color={theme.colors.Primary} />
+                )}
+              </View>
+            </View>
+
+            <View
+              style={{
+                justifyContent: "center",
+                alignItems: "center",
+                flexDirection: "row",
+              }}
+            >
+              {/* {recaptchaBanner} */}
+            </View>
+
+            <View
+              style={{
+                flexDirection: "row",
+                marginTop: 10,
+              }}
+            >
+              <Text>Already have an account?</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  navigation.navigate("login");
+                }}
+              >
+                <Text
+                  style={{
+                    color: theme.colors.Primary,
+                    marginBottom: 15
+                  }}
+                >
+                  {" "}
+                  Login
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
+          <StatusBar backgroundColor={"#BFD101"} />
         </View>
-        <StatusBar backgroundColor={"#BFD101"} />
-      </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </ScrollView>
   );
 };
 

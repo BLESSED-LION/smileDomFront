@@ -178,6 +178,7 @@ const LoginScreen = () => {
                         <TextInput
                           placeholder="Enter phone number"
                           onChangeText={handleTextChange}
+                          keyboardType="phone-pad"
                           style={{
                             width: "100%",
                           }}
