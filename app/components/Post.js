@@ -319,6 +319,36 @@ const Post = ({ post, onPress}) => {
               {commentsCount}
             </Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={{
+              marginRight: 10,
+              flexDirection: "row",
+              width: 100,
+              height: 40,
+              borderRadius: 20,
+              justifyContent: "center",
+              backgroundColor: theme.colors.grey,
+              alignItems: "center",
+            }}
+            onPress={commentPress}
+          >
+            <FontAwesome5
+              name="comment-dots"
+              size={24}
+              color={theme.colors.accountText}
+            />
+            <Text
+              style={{
+                marginLeft: 10,
+                fontSize: 14,
+                fontWeight: "bold",
+                lineHeight: 17,
+                color: theme.colors.accountText,
+              }}
+            >
+              {commentsCount}
+            </Text>
+          </TouchableOpacity>
 
           <TouchableOpacity
             onPress={sharePost}
