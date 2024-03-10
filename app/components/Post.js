@@ -15,7 +15,7 @@ import { useDoctor } from "../hooks/doctor";
 import { gql, useQuery, useMutation } from "@apollo/client";
 
 const GET_COMMENTS = gql`
-  query GetComments($postId: ID!) {
+  query GetComments($postId: String!) {
     getComments(postId: $postId) {
       content,
       createdAt
