@@ -1,46 +1,39 @@
 import { useNavigation } from '@react-navigation/native';
-import * as React from 'react';
-import { View, StyleSheet, Image, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
-import { Card, Title, Paragraph } from 'react-native-paper';
-import { extractAllButLastName } from '../constants/helpers';
-import LoadingComponent from './LoadingComponent';
+import { View, StyleSheet, Image, Text, TouchableOpacity } from 'react-native';
+import { useSelector } from 'react-redux';
 
-const UserCard = ({ name, specialty, image, onPress }) => {
-  return (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={onPress}
-    >
-      <Image source={image} style={styles.image} />
-      <Text style={styles.name}>{name}</Text>
-      <Text style={styles.specialty}>{specialty}</Text>
-    </TouchableOpacity>
-  )
-};
+const UserCard = ({ name, specialty, image, onPress }) => (
+  <TouchableOpacity style={styles.card} onPress={onPress}>
+    <Image source={image} style={styles.image} />
+    <Text style={styles.name}>{name}</Text>
+    <Text style={styles.specialty}>{specialty}</Text>
+  </TouchableOpacity>
+);
 
 const DoctorList = ({ data }) => {
   const navigation = useNavigation();
-  const v = JSON.stringify(data) === JSON.stringify([]) ? true : false
-  console.log("V: ", data)
-  // <ScrollView>
+  
+  if (!data || data.length === 0) {
+    return <Text style={styles.noData}>Cannot load data at the moment.</Text>;
+  }
+
+  const navigateToDoctor = (doc) => {
+    navigation.navigate("chatPatient", { doc });
+  };
+
   return (
     <View style={styles.container}>
-      {data.map(user => {
-        return (
-          <UserCard
-            key={user.id}
-            name={extractAllButLastName(user.name)}
-            specialty={user.specialization === "general practitioner" ? "GP" : user.specialization}
-            image={user.image ? {uri: user.image} : require("../../assets/icon.png")}
-            onPress={() => {console.log(user); navigation.navigate("chatPatient", { user })}}
-          />
-        )
-      })}
-      {v && <Text style={{fontSize: 16}}>Cannot load data at the current moment</Text>}
-
+      {data.map((doc) => (
+        <UserCard
+          key={doc.uuid}
+          name={doc.name}
+          specialty={doc.specialization === "general practitioner" ? "GP" : doc.specialization}
+          image={doc.image ? { uri: doc.image } : require("../../assets/icon.png")}
+          onPress={() => navigateToDoctor(doc)}
+        />
+      ))}
     </View>
-  )
-  // </ScrollView>
+  );
 };
 
 const styles = StyleSheet.create({
@@ -49,6 +42,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-around',
+    padding: 10,
   },
   card: {
     padding: 20,
@@ -56,30 +50,31 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 10,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
     marginTop: 10,
-    // maxWidth: 190
   },
   image: {
     width: 100,
     height: 100,
-    // borderRadius: 50,
   },
   name: {
     fontSize: 20,
     fontWeight: 'bold',
     marginTop: 10,
+    textAlign: 'center',
   },
   specialty: {
     fontSize: 16,
     color: '#666',
     marginTop: 5,
+  },
+  noData: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 20,
   },
 });
 

@@ -5,13 +5,10 @@ const GET_ALL_DOCTORS = gql`
   query {
     listAllDoctors {
       uuid
-      name
       specialisation
       image
       username
-      email,
       address,
-      phoneNumber,
       biography,
       consultationsDone,
       yearsOfExperience,
@@ -19,6 +16,9 @@ const GET_ALL_DOCTORS = gql`
       userData {
         uuid
         email
+        name
+        biography,
+        phone
       }
     }
   }
@@ -31,7 +31,18 @@ const useDoctors = () => {
 
   useEffect(() => {
     if (!loading && !error && data) {
-      setDoctors(data.listAllDoctors);
+      let docData = data.listAllDoctors;
+      // add name, email, biography, phone to the doctor object directly
+      docData = docData.map((doc) => {
+        return {
+          ...doc,
+          name: doc.userData.name,
+          email: doc.userData.email,
+          biography: doc.userData.biography,
+          phone: doc.userData.phone
+        };
+      }); 
+      setDoctors(docData);
     }
   }, [loading, error, data]); 
 

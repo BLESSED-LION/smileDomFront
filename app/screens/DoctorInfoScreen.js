@@ -118,6 +118,7 @@ const DoctorInfoScreen = ({ route, navigation }) => {
                 )}
               </TouchableOpacity>
               <TouchableOpacity
+                onPress={() => { navigation.navigate('Consult', { doctor }) }}
                 style={{
                   height: 29,
                   width: 82,

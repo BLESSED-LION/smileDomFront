@@ -37,32 +37,32 @@ const PatientChatScreen = (route) => {
     console.log("The doctor's id is: ", docId)
 
     useEffect(() => {
-        const chatId = auth.currentUser.uid + user.id
-        const q = query(messagesCollectionRef, 
-            orderBy('createdAt', 'desc'), 
-            where('senderId', 'in', [auth.currentUser.uid, user.id]),
-            where('receiverId', 'in', [auth.currentUser.uid, user.id]),
-            where('chatId', '==', chatId)
-            )
+        // const chatId = auth.currentUser.uid + user.id
+        // const q = query(messagesCollectionRef, 
+        //     orderBy('createdAt', 'desc'), 
+        //     where('senderId', 'in', [auth.currentUser.uid, user.id]),
+        //     where('receiverId', 'in', [auth.currentUser.uid, user.id]),
+        //     where('chatId', '==', chatId)
+        //     )
 
-        const unsubscribe = onSnapshot(q, querySnapshot => {
-            const msgs = querySnapshot.docs.map((doc) => doc.data())
-            console.log("snapshot: ", msgs)
-            setMessages(
-                querySnapshot.docs.map(doc => ({
-                    _id: doc.data()._id,
-                    createdAt: doc.data().createdAt.toDate(),
-                    text: doc.data().mesage,
-                    senderId: doc.data().senderId,
-                    receiverId: doc.data().receiverId,
-                    user: auth.currentUser.uid === doc.data().senderId ? u1 : user
-                }))
-            );
-            console.log("The messages are: ", messages)
-            setLoading(false)
-        });
+        // const unsubscribe = onSnapshot(q, querySnapshot => {
+        //     const msgs = querySnapshot.docs.map((doc) => doc.data())
+        //     console.log("snapshot: ", msgs)
+        //     setMessages(
+        //         querySnapshot.docs.map(doc => ({
+        //             _id: doc.data()._id,
+        //             createdAt: doc.data().createdAt.toDate(),
+        //             text: doc.data().mesage,
+        //             senderId: doc.data().senderId,
+        //             receiverId: doc.data().receiverId,
+        //             user: auth.currentUser.uid === doc.data().senderId ? u1 : user
+        //         }))
+        //     );
+        //     console.log("The messages are: ", messages)
+        //     setLoading(false)
+        // });
 
-        return () => unsubscribe();
+        // return () => unsubscribe();
     }, []);
 
     const onSend = useCallback((messages = []) => {

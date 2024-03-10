@@ -6,31 +6,26 @@ import { useDispatch, useSelector } from 'react-redux';
 import DoctorList from '../components/DoctorList';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import {db} from "../config/firebaseConfig"
-import { useDoctors } from '../hooks/doctors';
+import useDoctors from '../hooks/getDoctors';
 
 
 const ConsultScreen = () => {
   const { theme } = useTheme();
   const [selectedCategory, setSelectedCategory] = useState('General consultant');
   const [loading, setLoading] = useState(true);
-  // const [doctors, setDoctors] = useState([]);
-  // const doct = useDoctors();
-  // const doctors = doct ? doct : [];
-  const doctors = useSelector((state) => state.doctors.doctors);
-  console.log("Doctors: ", doctors)
+  const { doctors } = useDoctors();
   const [gp, setGp] = useState([]);
   const [dentists, setDentists] = useState([]);
-  const user = useSelector((state) => state.auth.user);
+  const user = useSelector((state) => state.user);
 
   useEffect(() => {
-    // getDoctors();
-
-    const gp = doctors.filter((doctor) => doctor.specialization === "general practitioner");
-    const dentists = doctors.filter((doctor) => doctor.specialization === "dentist");
-    setGp(gp)
-    setDentists(dentists)
-    console.log(doctors)
-  }, [doctors])
+    const gp = doctors.filter((doctor) => !doctor.specialization || doctor.specialization.toLowerCase() === "general practitioner");
+    const dentists = doctors.filter((doctor) => doctor.specialization && doctor.specialization.toLowerCase() === "dentist");
+    
+    setGp(gp);
+    setDentists(dentists);
+  }, [doctors]);
+  
 
   const SearchBar=()=>{
     return(
@@ -116,7 +111,7 @@ const ConsultScreen = () => {
             paddingTop: 15,
           }}
           >
-            <DoctorList data={[...gp, ...dentists]} />
+            <DoctorList data={gp} />
           </View>
         );
       case 'Dentist':
