@@ -21,9 +21,9 @@ import {
   BottomSheetModal,
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet';
-import { useDoctors } from '../hooks/doctors';
 import FloatingButton from '../components/FloatingAction';
 import usePosts from '../hooks/posts';
+import useDoctors from '../hooks/getDoctors';
 
 const HomeScreen = ({ navigation }) => {
   const { theme } = useTheme();
@@ -35,11 +35,6 @@ const HomeScreen = ({ navigation }) => {
   const showModal = () => setVisible(false);
   const hideModal = () => setVisible(false);
   const dispatch = useDispatch();
-  const {doctors} = useDoctors();
-  const doct = doctors ? doctors : [{
-    bio: "", email: "", experience: "", id: "", image: "", name: "", phoneNumber: "", specialization: "", type: ""
-  }];
-  console.log("Doctors: ", doct);
   const bottomSheetModalRef = useRef(null)
   const snapPoints = useMemo(() => ['25%', '50%'], []);
 
@@ -61,12 +56,7 @@ const HomeScreen = ({ navigation }) => {
     setUserInfo(u)
   }, [visible])
 
-  // Extracting all posts into a single array
-  console.log("The doctors are: ", doctors)
-  const newData = [...dummyData.Doctors, ...doctors];
   const allPosts = usePosts()
-
-  console.log("All posts: ", allPosts)
 
   // Sorting the posts by publishDate
   const sortedPosts = allPosts.sort((postA, postB) => {
@@ -77,7 +67,6 @@ const HomeScreen = ({ navigation }) => {
 
   const handlePress = async () => {
     const u = await getUser()
-    console.log("user: ", u)
     const additionalInfo = {
       type: u ? u.type : "patient",
     };
@@ -86,7 +75,6 @@ const HomeScreen = ({ navigation }) => {
       displayName: name + " " + additionalInfo.type, photoURL: generateRandomGravatarUrl(), email: email, additionalInfo: additionalInfo
     }).then(() => {
       const creds = { id: user && user.user.uid, name: name, email: email, phoneNumber: user && user.user.phoneNumber, type: "patient" }
-      // console.log(user.user.uid)
       if (auth.currentUser && !u) {
         addUser(creds);
       } else {
@@ -97,7 +85,6 @@ const HomeScreen = ({ navigation }) => {
           position: 'top', // Can be 'top', 'center', or 'bottom'
           duration: 3000, // Duration in milliseconds
         });
-        console.log("No current user")
       }
     }).then(() => {
       Toast.show({
@@ -127,11 +114,7 @@ const HomeScreen = ({ navigation }) => {
             <FloatingButton/>
           </View>
           <FlatList
-            ListHeaderComponent={<DoctorsNearYou
-              onPress={(doctorInfo) => {
-                navigation.navigate('doctor', { doctorInfo });
-              }}
-            />}
+            ListHeaderComponent={<DoctorsNearYou />}
             data={sortedPosts}
             keyExtractor={(item) => item.puid}
             renderItem={({ item }) => (

@@ -5,15 +5,21 @@ import dummyData from '../constants/dummyData';
 import { useSelector } from 'react-redux';
 import { auth } from '../config/firebaseConfig';
 import { extractAllButLastName } from '../constants/helpers';
+import useDoctors from '../hooks/getDoctors';
+import { useNavigation } from '@react-navigation/native';
 
-const DoctorsNearYou = ({onPress}) => {
+const DoctorsNearYou = () => {
   const { theme } = useTheme();
+  const navigation = useNavigation();
   const user = useSelector((state) => state.user);
+  const {doctors, loading} = useDoctors();
 
-  function DoctorList({ photo, DoctorName, online, onPress }) {
+  function DoctorList({doctor, photo, DoctorName, online }) {
     return (
       <TouchableOpacity
-      onPress={() => onPress({ photo, DoctorName, online })}
+      onPress={() => {
+        navigation.navigate('doctor', { doctor });
+      }}
         style={{
           alignItems: 'center',
           marginRight: 12,
@@ -62,22 +68,21 @@ const DoctorsNearYou = ({onPress}) => {
           color: theme.colors.Primary,
         }}
       >
-        Doctors near 
-        {console.log(user)}
+        Doctors near you
       </Text>
 
       {/* Doctors List */}
       <FlatList
-        data={dummyData.Doctors} // Use the Doctors array from dummyData
+        data={doctors} // Use the Doctors array from dummyData
         horizontal
         showsHorizontalScrollIndicator={false}
-        keyExtractor={(item) => item.id.toString()} // Use unique IDs for keys
+        keyExtractor={(item) => item.email.toString()} // Use unique IDs for keys
         renderItem={({ item }) => (
           <DoctorList
-           photo={item.photo}
-           DoctorName={item.name}
-           online={item.online}
-           onPress={(doctorInfo) => onPress(doctorInfo)}
+          doctor = {item}
+           photo={item.image ? item.image : require('../../assets/doctor.png')}
+           DoctorName={item.name ? item.name : 'Anonymous'}
+           online={false} // TODO: Implement online status
             />
         )}
         contentContainerStyle={{ paddingVertical: 7, }} // Adjust spacing as needed

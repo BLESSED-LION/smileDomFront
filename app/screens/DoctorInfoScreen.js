@@ -5,7 +5,7 @@ import { Ionicons,Fontisto } from '@expo/vector-icons';
 
 const DoctorInfoScreen = ({ route, navigation }) => {
   const { theme } = useTheme();
-  const { doctorInfo } = route.params;
+  const { doctor } = route.params;
   const handleGoBack = () => {
     navigation.goBack();
   };
@@ -35,7 +35,7 @@ const DoctorInfoScreen = ({ route, navigation }) => {
           fontWeight: '400',
           marginLeft: 9,
         }}
-        >{doctorInfo.DoctorName}</Text>
+        >{doctor.name}</Text>
       </View>
 
       <ScrollView
@@ -51,7 +51,7 @@ const DoctorInfoScreen = ({ route, navigation }) => {
         }}
         >
           <Image
-          source={doctorInfo?.DoctorPhoto}
+          source={doctor.image? doctor.image : require('../../assets/doctor.png')}
           style={{
             height: 198,
             width: 150,
@@ -68,8 +68,8 @@ const DoctorInfoScreen = ({ route, navigation }) => {
               fontSize: 19,
               fontWeight: 'bold',
             }}
-            >{doctorInfo.DoctorName}</Text>
-            <Text>{doctorInfo.DoctorName}</Text>
+            >{doctor.name}</Text>
+            <Text>{doctor.name}</Text>
 
             <View
             style={{
@@ -190,7 +190,7 @@ const DoctorInfoScreen = ({ route, navigation }) => {
               fontSize: 16,
               fontWeight: 'bold',
             }}
-            >{doctorInfo.DoctorName}</Text>
+            >{doctor.name}</Text>
           </View>
 
           <View
@@ -208,7 +208,7 @@ const DoctorInfoScreen = ({ route, navigation }) => {
               fontSize: 16,
               fontWeight: 'bold',
             }}
-            >{doctorInfo.DoctorName}</Text>
+            >{doctor.name}</Text>
           </View>
 
           <View
@@ -226,7 +226,7 @@ const DoctorInfoScreen = ({ route, navigation }) => {
               fontSize: 16,
               fontWeight: 'bold',
             }}
-            >{doctorInfo.DoctorName}</Text>
+            >{doctor.specialisation}</Text>
           </View>
 
           <View
@@ -244,7 +244,7 @@ const DoctorInfoScreen = ({ route, navigation }) => {
               fontSize: 16,
               fontWeight: 'bold',
             }}
-            >{doctorInfo.DoctorName}</Text>
+            >{doctor.name}</Text>
           </View>
 
           <View
@@ -262,7 +262,7 @@ const DoctorInfoScreen = ({ route, navigation }) => {
               fontSize: 16,
               fontWeight: 'bold',
             }}
-            >{doctorInfo.DoctorName}</Text>
+            >{doctor.name}</Text>
           </View>
 
           <View
@@ -280,7 +280,7 @@ const DoctorInfoScreen = ({ route, navigation }) => {
               fontSize: 16,
               fontWeight: 'bold',
             }}
-            >{doctorInfo.DoctorName}</Text>
+            >{doctor.email}</Text>
           </View>
 
           <View
@@ -298,7 +298,7 @@ const DoctorInfoScreen = ({ route, navigation }) => {
               fontSize: 16,
               fontWeight: 'bold',
             }}
-            >{doctorInfo.DoctorName}</Text>
+            >{doctor.name}</Text>
           </View>
 
           <View
