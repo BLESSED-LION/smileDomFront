@@ -76,7 +76,7 @@ const DoctorsNearYou = () => {
         data={doctors} // Use the Doctors array from dummyData
         horizontal
         showsHorizontalScrollIndicator={false}
-        keyExtractor={(item) => item.email.toString()} // Use unique IDs for keys
+        keyExtractor={(item) => item.uuid.toString()} // Use unique IDs for keys
         renderItem={({ item }) => (
           <DoctorList
           doctor = {item}

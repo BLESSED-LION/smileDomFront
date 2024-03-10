@@ -4,13 +4,22 @@ import { useQuery, gql } from '@apollo/client';
 const GET_ALL_DOCTORS = gql`
   query {
     listAllDoctors {
+      uuid
       name
-      fullName
       specialisation
       image
-      uuid
       username
-      email
+      email,
+      address,
+      phoneNumber,
+      biography,
+      consultationsDone,
+      yearsOfExperience,
+      followersCount
+      userData {
+        uuid
+        email
+      }
     }
   }
 `;
