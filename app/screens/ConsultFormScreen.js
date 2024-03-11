@@ -10,10 +10,6 @@ import Toast from 'react-native-toast-message';
 const ConsultationForm = ({ navigation, route }) => {
     const [activeTab, setActiveTab] = useState(0);
     const [inputFields, setInputFields] = useState([[{}], [{}], [{}], [{}], [{}], [{}], [{}], [{}]]);
-    const [fieldValues, setFieldValues] = useState(
-        inputFields[activeTab].map((field) => ({ ...field, value: '' }))
-    );
-    const [formData, setFormData] = useState({});
     const { patient, doctor } = route.params;
     const [selectedDate, setSelectedDate] = useState('');
     const [loading, setLoading] = useState(false)
