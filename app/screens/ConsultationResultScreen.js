@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, FlatList, ScrollView, TouchableOpacity, PermissionsAndroid, } from 'react-native';
 import { Button, Card, Paragraph, Title } from 'react-native-paper'; // Example using react-native-paper
 import * as FileSystem from 'expo-file-system';
-import * as Permissions from 'expo-permissions';
+// import * as Permissions from 'expo-permissions';
 import { auth } from '../config/firebaseConfig';
 
 const ConsultationResults = ({ route, navigation }) => {

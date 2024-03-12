@@ -4095,11 +4095,6 @@ expo-modules-core@1.11.10:
   dependencies:
     invariant "^2.2.4"
 
-expo-permissions@~14.2.1:
-  version "14.2.1"
-  resolved "https://registry.yarnpkg.com/expo-permissions/-/expo-permissions-14.2.1.tgz#da4a7ef45e13da99032960528267cc9ca8e964b8"
-  integrity sha512-jXGnOODtDMFvK7cwo7wIRPcnA7m1bie80gJ5BdL6Vs5kgCU7+RCLOCp3sBw7TKRPIlVMmQDhZA62bGzoBV0hkA==
-
 expo-splash-screen@~0.26.4:
   version "0.26.4"
   resolved "https://registry.yarnpkg.com/expo-splash-screen/-/expo-splash-screen-0.26.4.tgz#bc1fb226c6eae03ee351a3ebe5521a37f868cbc7"
@@ -7692,6 +7687,11 @@ update-browserslist-db@^1.0.13:
   dependencies:
     escalade "^3.1.1"
     picocolors "^1.0.0"
+
+updates@^15.3.1:
+  version "15.3.1"
+  resolved "https://registry.yarnpkg.com/updates/-/updates-15.3.1.tgz#7a91e75ba31b271621220242099e748d27fd48ed"
+  integrity sha512-DqHT1aJ6p6jVLWRiAeuVx/TQotvEwUjgrY1Mlc0a2qYk+eKEQVXugQ4M+6QoVMA3X1NFAVsb02d93pmWam4bBA==
 
 url-join@4.0.0:
   version "4.0.0"

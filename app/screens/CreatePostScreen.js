@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     paddingLeft: 8,
     borderRadius: 10,
-    borderColor: lightTheme.colors.Primary,
+    // borderColor: lightTheme.colors.Primary,
   },
   containerFlex: {
     flex: 1,
