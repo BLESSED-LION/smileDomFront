@@ -1,6 +1,7 @@
 import * as React from 'react';
-import { ScrollView } from 'react-native';
-import { Card, List, Text } from 'react-native-paper';
+import { ScrollView, TouchableOpacity, View } from 'react-native';
+import { Card, List, Text, Button } from 'react-native-paper';
+import { useNavigation } from '@react-navigation/native';
 
 const plans = [
   {
@@ -61,32 +62,37 @@ const plans = [
   },
 ];
 
-export default function MembershipArea() {
+const MembershipArea = () => {
+  const navigation = useNavigation();
+
   return (
-    <ScrollView>
-      <Text style={{ fontSize: 24, fontWeight: 'bold', margin: 16 }}>
-        SmileDom Membership Plans
-      </Text>
-      <Text style={{ fontSize: 18, marginHorizontal: 16, marginBottom: 8 }}>
-        Upgrade to unlock the full smilecom experience!
+    <ScrollView style={{ backgroundColor: '#F5F5F5', padding: 16 }}>
+      <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 16 }}>
+        Choose Your Plan
       </Text>
       {plans.map((plan) => (
-        <Card style={{ margin: 16, elevation: 4 }}>
-          <Card.Title
-            title={plan.name}
-            subtitle={plan.price}
-            style={{ backgroundColor: '#FFEB3B' }}
-          />
-          <Card.Content>
-            {plan.features.map((feature) => (
-              <List.Item
-                title={feature.title}
-                left={(props) => <List.Icon {...props} icon={feature.icon} />}
-              />
-            ))}
-          </Card.Content>
-        </Card>
+        <TouchableOpacity key={plan.name} onPress={() => navigation.navigate('PaymentDetails', { plan })}>
+          <Card style={{ marginBottom: 16 }}>
+            <Card.Title title={plan.name} subtitle={plan.price} />
+            <Card.Content>
+              <List.Section>
+                {plan.features.map((feature) => (
+                  <List.Item
+                    key={feature.title}
+                    title={feature.title}
+                    left={(props) => <List.Icon {...props} icon={feature.icon} />}
+                  />
+                ))}
+              </List.Section>
+            </Card.Content>
+            <Card.Actions style={{ justifyContent: 'flex-end' }}>
+              <Button onPress={() => navigation.navigate('PaymentDetails', { plan })}>Select Plan</Button>
+            </Card.Actions>
+          </Card>
+        </TouchableOpacity>
       ))}
     </ScrollView>
   );
-}
+};
+
+export default MembershipArea;

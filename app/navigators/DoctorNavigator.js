@@ -15,6 +15,7 @@ import VideoCallScreen from '../screens/VideoCallScreen';
 import UpdateProfileScreen from '../screens/UpdateProfileScreen';
 import MembershipArea from '../screens/MembershipArea';
 import CreatePost from '../screens/CreatePostScreen';
+import PaymentsScreen from '../screens/PaymentScreen';
 
 const Stack = createStackNavigator();
 
@@ -36,6 +37,7 @@ const DoctorNavigator = () => {
       <Stack.Screen name="videoCallScreen" component={MembershipArea} options={{ headerShown: false }} />
       <Stack.Screen name="notifications" component={NotificationsScreen} options={{ headerShown: false }} />
       <Stack.Screen name="createPost" component={CreatePost} options={{ headerShown: false }} />
+      <Stack.Screen name="PaymentDetails" component={PaymentsScreen} options={{ headerShown: false }} />
     </Stack.Navigator>
   )
 }
