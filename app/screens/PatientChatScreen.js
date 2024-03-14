@@ -7,118 +7,89 @@ import { renderInputToolbar, renderActions, renderComposer, renderSend } from '.
 import { useNavigation } from '@react-navigation/native';
 import { auth, db } from '../config/firebaseConfig';
 import { doc, addDoc, collection, orderBy, query, where, onSnapshot, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import Toast from 'react-native-toast-message';
 import { ActivityIndicator } from 'react-native-paper';
 import { convertTimeToWhatsAppStyle } from '../constants/helpers';
 import useDoctors from '../hooks/getDoctors';
+import { useMutation, useQuery } from '@apollo/client';
+import { GET_CHAT_MESSAGE, SEND_MESSAGE } from '../constants/mutations';
 
-const PatientChatScreen = ({doc}) => {
+const PatientChatScreen = ({route}) => {
     const [messages, setMessages] = useState([]);
     const [text, setText] = useState('');
     const [error, setError] = useState(null);
     const { theme } = useTheme();
+    const {doc} = route.params;
     console.log("doc is ", doc) 
     const user = useSelector((state) => state.user);
-    const senderId = user.uuid
-    const receiverId = user.id
+    console.log("User is ", user) 
+    const senderId = user.user.uuid
+    const receiverId = doc.uuid
+    console.log("sender id ", senderId, "receiver id ", receiverId);
     const {doctors, loading} = useDoctors();
     const filteredDoc = doctors.find(doc => doc.id === receiverId);
     const navigation = useNavigation()
-    const messagesCollectionRef = collection(db, 'messages');
+    const dispatch = useDispatch();
     const u = useSelector((state) => state.user.user);
 
+    const [sendMessage] = useMutation(SEND_MESSAGE);
+
+    const { loading: ld, error: err, data } = useQuery(GET_CHAT_MESSAGE, {
+        variables: { senderId, receiverId },
+        fetchPolicy: 'network-only',
+    });
+
     useEffect(() => {
-        // const chatId = auth.currentUser.uid + user.id
-        // const q = query(messagesCollectionRef, 
-        //     orderBy('createdAt', 'desc'), 
-        //     where('senderId', 'in', [auth.currentUser.uid, user.id]),
-        //     where('receiverId', 'in', [auth.currentUser.uid, user.id]),
-        //     where('chatId', '==', chatId)
-        //     )
+        if (data && data.getChatMessages) {
+            // Map retrieved messages to format expected by GiftedChat
+            const formattedMessages = data.getChatMessages.map(message => ({
+                _id: message.id,
+                text: message.message,
+                createdAt: parseInt(message.timestamp),
+                user: {
+                    _id: message.sender.id,
+                    name: message.sender.name,
+                    avatar: message.sender.profileImage
+                }
+            }));
 
-        // const unsubscribe = onSnapshot(q, querySnapshot => {
-        //     const msgs = querySnapshot.docs.map((doc) => doc.data())
-        //     console.log("snapshot: ", msgs)
-        //     setMessages(
-        //         querySnapshot.docs.map(doc => ({
-        //             _id: doc.data()._id,
-        //             createdAt: doc.data().createdAt.toDate(),
-        //             text: doc.data().mesage,
-        //             senderId: doc.data().senderId,
-        //             receiverId: doc.data().receiverId,
-        //             user: auth.currentUser.uid === doc.data().senderId ? user : user
-        //         }))
-        //     );
-        //     console.log("The messages are: ", messages)
-        //     setLoading(false)
-        // });
-
-        // return () => unsubscribe();
-    }, []);
-
-    const onSend = useCallback((messages = []) => {
-        const uRef = doc(db, "users", filteredDoc.did);
-        const newData = auth.currentUser.uid
-        const chatId = auth.currentUser.uid + route.route.params.user.id
-        console.log("The newest messages are: ", messages);
-
-        setMessages(previousMessages =>
-            GiftedChat.append(previousMessages, messages)
-        );
-        console.log("checking messages...: ", messages)
-        const { _id, createdAt, text, user } = messages[0];
-        console.log(text)
-        try {
-            addDoc(collection(db, 'messages'), {
-                _id,
-                createdAt,
-                mesage: text,
-                senderId: senderId,
-                receiverId: user.id,
-                chatId: chatId
-            }).then(() => {
-                updateDoc(uRef, {
-                    patients: arrayUnion(newData),
-                    patientsData: arrayUnion({
-                        patientId: newData,
-                        name: auth.currentUser.displayName,
-                        profileImage: user.image ? user.image : "",
-                        messages: messages,
-                        lastMessage: text ? text : "No messages",
-                        unreadMessages: 1,
-                        lastMessageTime: createdAt ? convertTimeToWhatsAppStyle(createdAt) : "Last time",
-                        patient: {...user, _id: user.id },
-                        createdAt: createdAt,
-                      })
-                  })
-                    .then(() => {
-                        console.log("Document updated successfully");
-                    })
-                    .catch((error) => {
-                        console.error("Error updating document: ", error);
-                    });
-            })
-        } catch (error) {
-            Toast.show({
-                text1: 'An error occured while updating',
-                // text2: 'Additional text can go here',
-                type: 'error', // Can be 'success', 'info', 'warning', or 'error'
-                position: 'top', // Can be 'top', 'center', or 'bottom'
-                duration: 3000, // Duration in milliseconds
-            });
+            const sortedMessages = formattedMessages.sort((a, b) => b.createdAt - a.createdAt);
+            setMessages(sortedMessages);
         }
-    }, []);
+    }, [data]);
+    
+    const onSend = useCallback(async (messages = []) => {
+        const { _id, createdAt, text, user } = messages[0];
+        console.log("Created at: ", createdAt);
+        
+        try {
+            const { data } = await sendMessage({
+                variables: {
+                    senderId: senderId,
+                    receiverId: receiverId,
+                    message: text,
+                    // createdAt
+                }
+            });
+
+            setMessages(previousMessages =>
+                GiftedChat.append(previousMessages, messages)
+            );
+        } catch (error) {
+            console.error("Error sending message:", error);
+        }
+    }, [senderId, receiverId, sendMessage]);
 
     return (
         <View style={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity>
-                    <Image source={user.image ? user.image : require("../../assets/icon.png")} style={styles.profileImage} />
+                    <Image source={doc.image ? {uri: doc.image} : require("../../assets/icon.png")} style={styles.profileImage} />
                 </TouchableOpacity>
                 <View style={styles.userInfo}>
                     <TouchableOpacity style={styles.userName}>
-                        <Text style={{ fontWeight: "500" }}>{user.name}</Text>
+                        <Text style={{ fontWeight: "500" }}>{doc.name}</Text>
                         <Text>Online</Text>
                     </TouchableOpacity>
                     <View style={styles.iconContainer}>
@@ -152,7 +123,9 @@ const PatientChatScreen = ({doc}) => {
                 renderActions={renderActions}
                 renderComposer={renderComposer}
                 renderSend={renderSend}
-                user={user}
+                user={{
+                    _id: user._id, // Current user's ID
+                }}
             />
             </View>
         </View>
