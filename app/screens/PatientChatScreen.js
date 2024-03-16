@@ -28,7 +28,7 @@ const PatientChatScreen = ({ route }) => {
 
     const { loading: ld, error: err, data } = useQuery(GET_CHAT_MESSAGE, {
         variables: { senderId, receiverId },
-        fetchPolicy: 'network-only',
+        // fetchPolicy: 'network-only',
     });
 
     useEffect(() => {
