@@ -18,6 +18,7 @@ import { useNavigation } from '@react-navigation/native';
 import SettingsScreen from '../screens/SettingScreen';
 import { useDoctors } from '../hooks/doctors';
 import { logout } from '../store/userSlice';
+import ConsultScreenHome from '../screens/ConsultScreenHome';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -218,7 +219,7 @@ const AppNavigator = ({ type, messages }) => {
               },
             }}
           /> :
-          <Tab.Screen name="Consult" component={ConsultScreen}
+          <Tab.Screen name="Consult" component={ConsultScreenHome}
             options={{
               headerShown: false,
               headerTitleAlign: 'center',

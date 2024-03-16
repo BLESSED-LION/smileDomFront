@@ -27,17 +27,8 @@ const DoctorNavigator = () => {
       <Stack.Screen name="doctor" component={DoctorInfoScreen} options={{ headerShown: false }} />
       <Stack.Screen name="profile" component={ProfileScreen} options={{ headerShown: false }} />
       <Stack.Screen name="chatDoctor" component={ChatScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="chatPatient" component={PatientChatScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="conResult" component={ConsultationResultScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="previousConsult" component={PreviousConsultationsScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="consultForm" component={ConsultationForm} options={{ headerShown: false }} />
-      <Stack.Screen name="callScreen" component={CallScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="membership" component={MembershipArea} options={{ headerShown: false }} />
-      <Stack.Screen name="updateProfile" component={UpdateProfileScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="videoCallScreen" component={MembershipArea} options={{ headerShown: false }} />
       <Stack.Screen name="notifications" component={NotificationsScreen} options={{ headerShown: false }} />
       <Stack.Screen name="createPost" component={CreatePost} options={{ headerShown: false }} />
-      <Stack.Screen name="PaymentDetails" component={PaymentsScreen} options={{ headerShown: false }} />
     </Stack.Navigator>
   )
 }

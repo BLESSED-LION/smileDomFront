@@ -1,36 +1,27 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, Image, TouchableOpacity, TextInput, StyleSheet } from 'react-native';
+import { View, Text, Image, TouchableOpacity, TextInput, StyleSheet, StatusBar } from 'react-native';
 import { GiftedChat } from 'react-native-gifted-chat';
 import { FontAwesome } from '@expo/vector-icons';
 import { useTheme } from '../constants/theme';
 import { renderInputToolbar, renderActions, renderComposer, renderSend } from '../components/InputToolbar';
 import { useNavigation } from '@react-navigation/native';
-import { auth, db } from '../config/firebaseConfig';
-import { doc, addDoc, collection, orderBy, query, where, onSnapshot, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { useDispatch, useSelector } from 'react-redux';
-import Toast from 'react-native-toast-message';
 import { ActivityIndicator } from 'react-native-paper';
-import { convertTimeToWhatsAppStyle } from '../constants/helpers';
 import useDoctors from '../hooks/getDoctors';
 import { useMutation, useQuery } from '@apollo/client';
 import { GET_CHAT_MESSAGE, SEND_MESSAGE } from '../constants/mutations';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const PatientChatScreen = ({route}) => {
+const PatientChatScreen = ({ route }) => {
     const [messages, setMessages] = useState([]);
     const [text, setText] = useState('');
-    const [error, setError] = useState(null);
     const { theme } = useTheme();
-    const {doc} = route.params;
-    console.log("doc is ", doc) 
+    const { doc } = route.params;
     const user = useSelector((state) => state.user);
-    console.log("User is ", user) 
     const senderId = user.user.uuid
     const receiverId = doc.uuid
-    console.log("sender id ", senderId, "receiver id ", receiverId);
-    const {doctors, loading} = useDoctors();
-    const filteredDoc = doctors.find(doc => doc.id === receiverId);
     const navigation = useNavigation()
-    const dispatch = useDispatch();
+    const [loading, setLoading] = useState(true);
     const u = useSelector((state) => state.user.user);
 
     const [sendMessage] = useMutation(SEND_MESSAGE);
@@ -48,7 +39,7 @@ const PatientChatScreen = ({route}) => {
                 text: message.message,
                 createdAt: parseInt(message.timestamp),
                 user: {
-                    _id: message.sender.id,
+                    _id: message.sender.uuid,
                     name: message.sender.name,
                     avatar: message.sender.profileImage
                 }
@@ -58,34 +49,35 @@ const PatientChatScreen = ({route}) => {
             setMessages(sortedMessages);
         }
     }, [data]);
-    
-    const onSend = useCallback(async (messages = []) => {
-        const { _id, createdAt, text, user } = messages[0];
-        console.log("Created at: ", createdAt);
-        
+
+    const onSend = useCallback(async (newMessages = []) => {
+        const { _id, createdAt, text, user } = newMessages[0];
+
+        // Update UI immediately with the new message
+        setMessages(previousMessages =>
+            GiftedChat.append(previousMessages, newMessages)
+        );
+
         try {
-            const { data } = await sendMessage({
+            // Send the message to the server
+            await sendMessage({
                 variables: {
                     senderId: senderId,
                     receiverId: receiverId,
                     message: text,
-                    // createdAt
                 }
             });
-
-            setMessages(previousMessages =>
-                GiftedChat.append(previousMessages, messages)
-            );
         } catch (error) {
             console.error("Error sending message:", error);
+            // Handle error if needed
         }
-    }, [senderId, receiverId, sendMessage]);
+    }, [sendMessage]);
 
     return (
         <View style={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity>
-                    <Image source={doc.image ? {uri: doc.image} : require("../../assets/icon.png")} style={styles.profileImage} />
+                    <Image source={doc.image ? { uri: doc.image } : require("../../assets/icon.png")} style={styles.profileImage} />
                 </TouchableOpacity>
                 <View style={styles.userInfo}>
                     <TouchableOpacity style={styles.userName}>
@@ -108,26 +100,25 @@ const PatientChatScreen = ({route}) => {
                     </View>
                 </View>
             </View>
-            <View style={{flex:1, backgroundColor:"#fff", paddingBottom: 10}}>
-            {loading && <View style={{alignSelf:"center", marginTop: 50}}><ActivityIndicator /></View>}
-            {/* {ld && <View style={{alignSelf:"center", marginTop: 50}}><ActivityIndicator /></View>} */}
-            
-            <GiftedChat
-                messages={messages}
-                onSend={newMessages => onSend(newMessages)}
-                text={text}
-                onInputTextChanged={setText}
-                alwaysShowSend
-                bottomOffset={26}
-                renderInputToolbar={renderInputToolbar}
-                renderActions={renderActions}
-                renderComposer={renderComposer}
-                renderSend={renderSend}
-                user={{
-                    _id: user._id, // Current user's ID
-                }}
-            />
+            <View style={{ flex: 1, backgroundColor: "#fff", paddingBottom: 10 }}>
+                {/* {loading && <ActivityIndicator style={{ alignSelf: "center", marginTop: 50 }} />} */}
+                <GiftedChat
+                    messages={messages}
+                    onSend={onSend}
+                    text={text}
+                    onInputTextChanged={setText}
+                    alwaysShowSend
+                    bottomOffset={26}
+                    renderInputToolbar={renderInputToolbar}
+                    renderActions={renderActions}
+                    renderComposer={renderComposer}
+                    renderSend={renderSend}
+                    user={{
+                        _id: user.user.uuid, // Current user's ID
+                    }}
+                />
             </View>
+            {/* <StatusBar translucent backgroundColor="transparent" /> */}
         </View>
     );
 };
@@ -135,6 +126,7 @@ const PatientChatScreen = ({route}) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        // marginTop: 10
     },
     header: {
         flexDirection: 'row',
