@@ -15,8 +15,11 @@ const PreviousConsultationsScreen = ({ route }) => {
     const appointmentsCollectionRef = collection(db, "appointments");
     const navigation = useNavigation()
     const { patient, doctor } = route.params;
-    const pid = !patient.patient ? auth.currentUser.uid : patient.patient.id;
-    const name = !patient.patient ? auth.currentUser.displayName : patient.patient.name;
+    console.log("Patient ", patient, "Doctor", doctor)
+    const pid = patient.uuid;
+    // const pid = '';
+    // const name = '';
+    const name = patient.name;
 
     useEffect(async () => {
         const q = query(appointmentsCollectionRef,

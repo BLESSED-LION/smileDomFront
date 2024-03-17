@@ -23,6 +23,7 @@ const PatientChatScreen = ({ route }) => {
     const navigation = useNavigation()
     const [loading, setLoading] = useState(true);
     const u = useSelector((state) => state.user.user);
+    console.log("U ", u)
 
     const [sendMessage] = useMutation(SEND_MESSAGE);
 
@@ -93,7 +94,7 @@ const PatientChatScreen = ({ route }) => {
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.tico} onPress={() => navigation.navigate("previousConsult", {
                             patient: u,
-                            doctor: user,
+                            doctor: user.user,
                         })}>
                             <FontAwesome name="book" size={24} color={theme.colors.yellow} />
                         </TouchableOpacity>

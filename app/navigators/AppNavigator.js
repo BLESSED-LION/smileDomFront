@@ -19,6 +19,8 @@ import SettingsScreen from '../screens/SettingScreen';
 import { useDoctors } from '../hooks/doctors';
 import { logout } from '../store/userSlice';
 import ConsultScreenHome from '../screens/ConsultScreenHome';
+import CreatePost from '../screens/CreatePostScreen';
+import PatientListScreen from '../screens/PatientsListScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -119,7 +121,10 @@ const AppNavigator = ({ type, messages }) => {
   const dispatch = useDispatch();
   const [isLogged, setUserLogged] = useState(false);
   const {doctors} = useDoctors();
-  const user = useSelector(state => state.user)
+  const user = useSelector((state) => state.user);
+  const isDoctor = user.user ? user.user.isDoctor : false;
+  console.log("User ", user, "isDoctor", isDoctor)
+  // console.log("User ", user, "isDoctor", isDoctor);
   // dispatch(getDoctorInfo(doctors));
 
   useEffect(() => {
@@ -205,9 +210,9 @@ const AppNavigator = ({ type, messages }) => {
           statusBarStyle: "auto",
         }}
         />
-        {type === "doctor" ?
+        {user.isLoggedIn && isDoctor ?
           // {user && extractLastName(user.user.displayName) === "doctor" ?
-          <Tab.Screen name="Patients" component={PatientsScreen}
+          <Tab.Screen name="Patients" component={PatientListScreen}
             options={{
               headerShown: false,
               headerTitleAlign: 'center',
@@ -231,7 +236,7 @@ const AppNavigator = ({ type, messages }) => {
               },
             }}
           />}
-          {type === "patient" &&
+          {user.isLoggedIn && !isDoctor &&
         <Tab.Screen name="Sessions" component={SessonsScreen}
           options={({ route }) => ({
             tabBarBadge: 0,

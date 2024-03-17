@@ -25,58 +25,58 @@ const ChatScreen = ({ route, navigation }) => {
     // const doctor = doct ? doct : {id: "", name: ""};
     const messagesCollectionRef = collection(db, 'messages');
 
-    useEffect(() => {
-        const q = query(messagesCollectionRef, 
-            orderBy('createdAt', 'desc'), 
-            where('senderId', 'in', [auth.currentUser.uid, patient.patient.id]),
-            where('receiverId', 'in', [auth.currentUser.uid, patient.patient.id]),
-            where('chatId', '==', patient.patient.id + auth.currentUser.uid)
-            );
+    // useEffect(() => {
+    //     const q = query(messagesCollectionRef, 
+    //         orderBy('createdAt', 'desc'), 
+    //         where('senderId', 'in', [auth.currentUser.uid, patient.patient.id]),
+    //         where('receiverId', 'in', [auth.currentUser.uid, patient.patient.id]),
+    //         where('chatId', '==', patient.patient.id + auth.currentUser.uid)
+    //         );
           
-        const unsubscribe = onSnapshot(q, querySnapshot => {
-            const msgs = querySnapshot.docs.map((doc) => doc.data())
-            console.log("snapshot: ", msgs)
-            setMessages(
-                querySnapshot.docs.map(doc => ({
-                    _id: doc.data().id,
-                    createdAt: doc.data().createdAt.toDate(),
-                    text: doc.data().mesage,
-                    senderId: doc.data().senderId,
-                    receiverId: doc.data().receiverId,
-                    user: auth.currentUser.uid === doc.data().senderId ? doctor : patient.patient
-                }))
-            );
-            console.log("Messages: ", messages)
-            setLoading(false)
-        });
+    //     const unsubscribe = onSnapshot(q, querySnapshot => {
+    //         const msgs = querySnapshot.docs.map((doc) => doc.data())
+    //         console.log("snapshot: ", msgs)
+    //         setMessages(
+    //             querySnapshot.docs.map(doc => ({
+    //                 _id: doc.data().id,
+    //                 createdAt: doc.data().createdAt.toDate(),
+    //                 text: doc.data().mesage,
+    //                 senderId: doc.data().senderId,
+    //                 receiverId: doc.data().receiverId,
+    //                 user: auth.currentUser.uid === doc.data().senderId ? doctor : patient.patient
+    //             }))
+    //         );
+    //         console.log("Messages: ", messages)
+    //         setLoading(false)
+    //     });
 
-        return () => unsubscribe();
-    }, []);
+    //     return () => unsubscribe();
+    // }, []);
 
     const onSend = useCallback((messages = []) => {
         console.log("checking messages...: ", messages)
         const { _id, createdAt, text, user } = messages[0];
         console.log(text)
-        try {
-            addDoc(collection(db, 'messages'), {
-                _id,
-                createdAt,
-                mesage: text,
-                senderId: auth.currentUser.uid,
-                receiverId: patient.patient.id,
-                chatId: patient.patient.id + auth.currentUser.uid
-            })
-            console.log("Message added")
-        } catch (error) {
-            console.error(error)
-            Toast.show({
-                text1: 'An error occured while sending message',
-                // text2: 'Additional text can go here',
-                type: 'error', // Can be 'success', 'info', 'warning', or 'error'
-                position: 'top', // Can be 'top', 'center', or 'bottom'
-                duration: 3000, // Duration in milliseconds
-            });
-        }
+        // try {
+        //     addDoc(collection(db, 'messages'), {
+        //         _id,
+        //         createdAt,
+        //         mesage: text,
+        //         senderId: auth.currentUser.uid,
+        //         receiverId: patient.patient.id,
+        //         chatId: patient.patient.id + auth.currentUser.uid
+        //     })
+        //     console.log("Message added")
+        // } catch (error) {
+        //     console.error(error)
+        //     Toast.show({
+        //         text1: 'An error occured while sending message',
+        //         // text2: 'Additional text can go here',
+        //         type: 'error', // Can be 'success', 'info', 'warning', or 'error'
+        //         position: 'top', // Can be 'top', 'center', or 'bottom'
+        //         duration: 3000, // Duration in milliseconds
+        //     });
+        // }
     }, [messages]);
 
     return (

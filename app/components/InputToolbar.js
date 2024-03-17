@@ -1,6 +1,6 @@
 /* eslint-disable react/destructuring-assignment */
 /* eslint-disable react/jsx-props-no-spreading */
-import React from 'react';
+import React, { useState } from 'react';
 import { Image, TouchableOpacity } from 'react-native';
 import { InputToolbar, Actions, Composer, Send } from 'react-native-gifted-chat';
 import { FontAwesome } from '@expo/vector-icons';
@@ -20,13 +20,35 @@ export const renderInputToolbar = (props) => (
 );
 
 export const renderActions = (props) => {
+    const [selectedFileUri, setSelectedFileUri] = useState(null);
+
     const pickFile = async () => {
-        let result = await DocumentPicker.getDocumentAsync({ type: '*/*' });
-        if (!result.cancelled) {
-          const fileUri = result.uri;
-          // Handle file upload
+        try {
+            const result = await DocumentPicker.getDocumentAsync({ type: '*/*' });
+            if (!result.cancelled) {
+                const fileUri = result.uri;
+                setSelectedFileUri(fileUri);
+            }
+        } catch (error) {
+            console.error('Error picking file:', error);
         }
-      };
+    };
+
+    const sendFileMessage = () => {
+        if (selectedFileUri) {
+            const message = {
+                _id: Math.round(Math.random() * 1000000).toString(),
+                text: selectedFileUri, // Use file URI as the message content
+                createdAt: new Date(),
+                user: {
+                    _id: props.user._id,
+                },
+                // You can add additional properties if needed
+            };
+            props.onSend([message]); // Send the message
+            setSelectedFileUri(null); // Reset selected file URI
+        }
+    };
 
     return (
         <Actions
@@ -41,7 +63,7 @@ export const renderActions = (props) => {
                 marginBottom: 0,
             }}
             icon={() => (
-                <TouchableOpacity>
+                <TouchableOpacity onPress={pickFile}>
                     <FontAwesome name="paperclip" size={24} color="black" />
                 </TouchableOpacity>
             )}
