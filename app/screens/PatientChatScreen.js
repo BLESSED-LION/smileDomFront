@@ -1,16 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, Image, TouchableOpacity, TextInput, StyleSheet, StatusBar } from 'react-native';
+import { View, ActivityIndicator, Image, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { GiftedChat } from 'react-native-gifted-chat';
 import { FontAwesome } from '@expo/vector-icons';
 import { useTheme } from '../constants/theme';
 import { renderInputToolbar, renderActions, renderComposer, renderSend } from '../components/InputToolbar';
 import { useNavigation } from '@react-navigation/native';
-import { useDispatch, useSelector } from 'react-redux';
-import { ActivityIndicator } from 'react-native-paper';
-import useDoctors from '../hooks/getDoctors';
+import { useSelector } from 'react-redux';
 import { useMutation, useQuery } from '@apollo/client';
 import { GET_CHAT_MESSAGE, SEND_MESSAGE } from '../constants/mutations';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const PatientChatScreen = ({ route }) => {
     const [messages, setMessages] = useState([]);
@@ -18,23 +15,20 @@ const PatientChatScreen = ({ route }) => {
     const { theme } = useTheme();
     const { doc } = route.params;
     const user = useSelector((state) => state.user);
-    const senderId = user.user.uuid
-    const receiverId = doc.uuid
-    const navigation = useNavigation()
-    const [loading, setLoading] = useState(true);
+    const senderId = user.user.uuid;
+    const receiverId = doc.uuid;
+    const navigation = useNavigation();
     const u = useSelector((state) => state.user.user);
-    console.log("U ", u)
 
     const [sendMessage] = useMutation(SEND_MESSAGE);
 
-    const { loading: ld, error: err, data } = useQuery(GET_CHAT_MESSAGE, {
+    const { loading: ld, data } = useQuery(GET_CHAT_MESSAGE, {
         variables: { senderId, receiverId },
-        // fetchPolicy: 'network-only',
+        pollInterval: 5000, // Poll every 5 seconds
     });
 
     useEffect(() => {
         if (data && data.getChatMessages) {
-            // Map retrieved messages to format expected by GiftedChat
             const formattedMessages = data.getChatMessages.map(message => ({
                 _id: message.id,
                 text: message.message,
@@ -52,27 +46,17 @@ const PatientChatScreen = ({ route }) => {
     }, [data]);
 
     const onSend = useCallback(async (newMessages = []) => {
-        const { _id, createdAt, text, user } = newMessages[0];
-
-        // Update UI immediately with the new message
-        setMessages(previousMessages =>
-            GiftedChat.append(previousMessages, newMessages)
-        );
+        const { _id, text } = newMessages[0];
+        setMessages(previousMessages => GiftedChat.append(previousMessages, newMessages));
 
         try {
-            // Send the message to the server
             await sendMessage({
-                variables: {
-                    senderId: senderId,
-                    receiverId: receiverId,
-                    message: text,
-                }
+                variables: { senderId, receiverId, message: text },
             });
         } catch (error) {
             console.error("Error sending message:", error);
-            // Handle error if needed
         }
-    }, [sendMessage]);
+    }, [sendMessage, senderId, receiverId]);
 
     return (
         <View style={styles.container}>
@@ -92,17 +76,14 @@ const PatientChatScreen = ({ route }) => {
                         <TouchableOpacity style={styles.tico} onPress={() => navigation.navigate("videoCallScreen")}>
                             <FontAwesome name="video-camera" size={24} color={theme.colors.yellow} />
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.tico} onPress={() => navigation.navigate("previousConsult", {
-                            patient: u,
-                            doctor: user.user,
-                        })}>
+                        <TouchableOpacity style={styles.tico} onPress={() => navigation.navigate("previousConsult", { patient: u, doctor: user.user })}>
                             <FontAwesome name="book" size={24} color={theme.colors.yellow} />
                         </TouchableOpacity>
                     </View>
                 </View>
             </View>
             <View style={{ flex: 1, backgroundColor: "#fff", paddingBottom: 10 }}>
-                {/* {loading && <ActivityIndicator style={{ alignSelf: "center", marginTop: 50 }} />} */}
+                {ld && <ActivityIndicator style={{ alignSelf: "center", marginTop: 50 }} />}
                 <GiftedChat
                     messages={messages}
                     onSend={onSend}
@@ -114,12 +95,9 @@ const PatientChatScreen = ({ route }) => {
                     renderActions={renderActions}
                     renderComposer={renderComposer}
                     renderSend={renderSend}
-                    user={{
-                        _id: user.user.uuid, // Current user's ID
-                    }}
+                    user={{ _id: user.user.uuid }}
                 />
             </View>
-            {/* <StatusBar translucent backgroundColor="transparent" /> */}
         </View>
     );
 };

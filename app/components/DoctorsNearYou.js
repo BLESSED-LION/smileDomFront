@@ -13,6 +13,7 @@ const DoctorsNearYou = () => {
   const navigation = useNavigation();
   const user = useSelector((state) => state.user);
   const {doctors, loading} = useDoctors();
+  console.log("Doctors ", doctors)
 
   function DoctorList({doctor, photo, DoctorName, online }) {
     return (

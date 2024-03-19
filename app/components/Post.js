@@ -195,7 +195,7 @@ const Post = ({ post, onPress}) => {
             </Text>
           </View>
         </View>
-        { !user.hasFollowedAuthor ?
+        { user && !user.hasFollowedAuthor ?
           <TouchableOpacity onPress={onPressFollow}>
             <Text
               style={{

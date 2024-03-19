@@ -1,137 +1,134 @@
-import React, { useEffect, useState } from 'react';
-import { View, ScrollView, Text, TouchableOpacity, Image, TextInput } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useTheme } from '../constants/theme';
-import { collection, getDocs, query, where } from 'firebase/firestore';
-import { auth, db } from '../config/firebaseConfig';
-import { ActivityIndicator, List } from 'react-native-paper';
+import React from 'react';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import { useQuery } from '@apollo/client';
+import { GET_CHATS } from '../constants/mutations';
+import { useNavigation } from '@react-navigation/native';
+import { formatTime } from '../constants/helpers';
 
-const SessonsScreen = () => {
-  const [selectedTab, setSelectedTab] = useState('Chats');
-  const [chats, setChats] = useState([])
-  const [apps, setApps] = useState([])
-  const [loading, setLoading] = useState(true)
-  const { theme } = useTheme()
+const SessionsScreen = () => {
+  const { loading, error, data } = useQuery(GET_CHATS);
+  const navigation = useNavigation();
 
-  const tabs = ['Chats', 'Complains', 'Medical History', 'Examinations', 'Diagnosis']
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+        <Text>Loading correspondence...</Text>
+      </View>
+    );
+  }
 
-  useEffect(async () => {
-    const messagesRef = collection(db, 'messages');
-    const complainsRef = collection(db, 'appointments');
-    const querySnapshot = await getDocs(query(messagesRef, where('senderId', '==', auth.currentUser.uid), where('receiverId', '==', auth.currentUser.uid)));
-    const querySnapshot1 = await getDocs(query(complainsRef, where('patient', '==', auth.currentUser.uid)));
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text>Error: {error.message}</Text>
+      </View>
+    );
+  }
 
-    const groupedMessages = querySnapshot.docs.reduce((acc, doc) => {
-      const messageData = doc.data();
-      const chatId = messageData.chatId;
-      acc[chatId] = acc[chatId] || []; // Initialize group if it doesn't exist
-      acc[chatId].push(messageData);
-      return acc;
-    }, {});
-    const apps = querySnapshot1.docs.map((doc) => doc.data())
-    const groupedMessagesArray = Object.values(groupedMessages);
-    setApps(apps)
-    setChats(groupedMessagesArray)
-    console.log("Grouped Messages: ", groupedMessagesArray)
-    console.log("Appointments: ", apps)
-    setLoading(false)
+  const { userChats } = data;
 
-  }, [])
+  const renderPatientItem = ({ item }) => (
+    <TouchableOpacity
+      style={styles.patientItem}
+      onPress={() => navigation.navigate('chatDoctor', { patient: item })}
+    >
+      <Image source={!item.avatar ? require("../../assets/doctor.png") : {uri: item.avatar}} style={styles.avatar} />
+            <View style={styles.patientInfo}>
+                <Text style={styles.patientName}>{item.name}</Text>
+                <View style={styles.lastMessageContainer}>
+                    <Text style={styles.lastMessage}>{item.lastMessage}</Text>
+                </View>
+            </View>
+            <View>
+                {item.unreadMessages > 0 && (
+                    <View style={styles.unreadBadge}>
+                        <Text style={styles.unreadCount}>{item.unreadMessages}</Text>
+                    </View>
+                )}
+                {console.log(formatTime(parseFloat(item.lastMessageTime)))}
+                <Text style={styles.lastMessageTime}>{formatTime(parseFloat(item.lastMessageTime))}</Text>
+            </View>
+    </TouchableOpacity>
+  );
 
   return (
-    <View
-      style={{
-        marginTop: 50,
-      }}
-    >
-      <ScrollView horizontal>
-        {tabs.map((tab, index) => (
-          <TouchableOpacity
-            key={index}
-            onPress={() => setSelectedTab(tab)}
-            style={{
-              borderTopColor: theme.colors.Background,
-              borderLeftColor: theme.colors.Background,
-              borderRightColor: theme.colors.Background,
-              borderBottomColor: tab === selectedTab ? "#2FA8E5" : theme.colors.Background,
-              borderWidth: 3,
-            }}
-          >
-            <Text style={{ padding: 10, fontWeight: "500" }}>{tab}</Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-      {loading && <View style={{alignSelf:"center", marginTop: 50}}><ActivityIndicator /></View>}
-      {!loading && chats == [] ? <View style={{alignSelf:"center", marginTop: 50}}>
-        <Text style={{fontSize:16, fontWeight:"900"}}>No data to display. Consult to get results</Text>
-      </View>:
-      <View style={{ padding: 20 }}>
-        {selectedTab === 'Chats' && (
-          <List.Section>
-            {chats.map((chat) => (
-              <List.Item
-                key={chat._id}
-                title={chat[0].mesage}
-                description={chat[1] ? chat[1].mesage : chat[0].mesage}
-                left={(props) => (
-                  // <List.Icon {...props} icon={chat.unread ? 'email' : 'email-read'} />
-                  <List.Icon {...props} icon={'email'} />
-                )}
-              />
-            ))}
-          </List.Section>
-        )}
-        {selectedTab === 'Complains' && (
-          <List.Section>
-          {apps.map((arr, index) => (
-            <List.Item
-              key={index}
-              title={arr.complains[0]}
-              description={arr.complains[0]}
-              left={(props) => <List.Icon {...props} icon="alert-circle" />}
-            />
-          ))}
-        </List.Section>
-        )}
-        {selectedTab === 'Medical History' && (
-          <List.Section>
-          {apps.map((arr, index) => (
-            <List.Item
-              key={index}
-              title={arr.history[0]}
-              description={arr.history[0]}
-              left={(props) => <List.Icon {...props} icon="alert-circle" />}
-            />
-          ))}
-        </List.Section>
-        )}
-        {selectedTab === 'Examinations' && (
-          <List.Section>
-          {apps.map((arr, index) => (
-            <List.Item
-              key={index}
-              title={arr.examinations[0]}
-              description={arr.examinations[0]}
-              left={(props) => <List.Icon {...props} icon="alert-circle" />}
-            />
-          ))}
-        </List.Section>
-        )}
-        {selectedTab === 'Diagnosis' && (
-          <List.Section>
-          {apps.map((arr, index) => (
-            <List.Item
-              key={index}
-              title={arr.diagnosis[0]}
-              description={arr.diagnosis[0]}
-              left={(props) => <List.Icon {...props} icon="alert-circle" />}
-            />
-          ))}
-        </List.Section>
-        )}
-      </View>}
+    <View style={styles.container}>
+      <FlatList
+        data={userChats}
+        renderItem={renderPatientItem}
+        keyExtractor={item => item.id}
+        contentContainerStyle={styles.patientList}
+      />
     </View>
   );
 };
 
-export default SessonsScreen;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    paddingHorizontal: 10,
+    paddingTop: 10,
+    marginTop: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  patientList: {
+    paddingVertical: 10,
+  },
+  patientItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  avatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 15,
+  },
+  patientInfo: {
+    flex: 1,
+  },
+  patientName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  lastMessageContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  lastMessage: {
+    fontSize: 14,
+    color: '#555',
+  },
+  lastMessageTime: {
+    fontSize: 12,
+    color: '#999',
+  },
+  unreadBadge: {
+    backgroundColor: '#4CAF50',
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  unreadCount: {
+    color: '#fff',
+    fontSize: 12,
+  },
+});
+
+export default SessionsScreen;

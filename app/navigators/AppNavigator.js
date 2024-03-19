@@ -6,12 +6,8 @@ import VerifyOtpScreen from '../screens/VerifyOtpScreen';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../constants/theme';
 import DoctorNavigator from './DoctorNavigator';
-import ConsultScreen from '../screens/ConsultScreen';
-import PrinscribesScreen from '../screens/PrinscribesScreen';
 import SessonsScreen from '../screens/SessonsScreen';
-import SettingScreen from '../screens/SettingScreen';
 import { useDispatch, useSelector } from 'react-redux';
-// import { getDoctorInfo, getMessages, getUserInfo, loginSuccess, logout } from '../store/actions';
 import LoginScreen from '../screens/LoginScreen';
 import SignUpScreen from '../screens/SignUpScreen';
 import { useNavigation } from '@react-navigation/native';
@@ -19,8 +15,8 @@ import SettingsScreen from '../screens/SettingScreen';
 import { useDoctors } from '../hooks/doctors';
 import { logout } from '../store/userSlice';
 import ConsultScreenHome from '../screens/ConsultScreenHome';
-import CreatePost from '../screens/CreatePostScreen';
 import PatientListScreen from '../screens/PatientsListScreen';
+import { Entypo } from '@expo/vector-icons';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -60,9 +56,7 @@ const LogoImage = () => {
 
 const HeaderRightIcons = () => {
   const dispatch = useDispatch()
-  const [forceRerender, setForceRerender] = useState(false);
   const user = useSelector((state) => state.user.user);
-  const [r, sR] = useState(0)
   const navigation = useNavigation()
 
   const handleLogout = () => {
@@ -76,7 +70,8 @@ const HeaderRightIcons = () => {
   return (
     <View style={[styles.headerRight, { justifyContent: 'center', alignItems: 'center' }]}>
       <TouchableOpacity style={[{ marginRight: 5 }]} onPress={handleLogout}>
-        <MaterialCommunityIcons name="logout" size={30} color={theme.colors.Text} />
+        {/* <MaterialCommunityIcons name="logout" size={30} color={theme.colors.Text} /> */}
+        <Entypo name="log-out" size={30} color={theme.colors.Text} />
       </TouchableOpacity>
       <TouchableOpacity style={[{ marginRight: 5 }]} onPress={() => navigation.navigate("notifications")}>
         <MaterialCommunityIcons name="bell-outline" size={30} color={theme.colors.Text} />

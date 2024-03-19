@@ -31,3 +31,16 @@ query getChatMessages($senderId:String!, $receiverId:String!){
     }
   }
 `;
+export const GET_CHATS = gql`
+query userChats{
+  userChats{
+    id
+    name
+    image
+    lastMessageTime
+    lastMessage
+    unreadMessages
+    uuid
+    }
+  }
+`;

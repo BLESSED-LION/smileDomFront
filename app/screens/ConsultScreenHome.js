@@ -16,7 +16,7 @@ const Stack = createStackNavigator();
 
 function ConsultScreenHome() {
   const user = useSelector((state) => state.user);
-  const free = user.user.duration === "free";
+  const free = user.user && user.user.duration === "free";
 
   return (
     <Stack.Navigator
@@ -26,7 +26,7 @@ function ConsultScreenHome() {
     >
       <Stack.Screen name="HomeMainScreen" component={ConsultScreen} />
       <Stack.Screen name="membership" component={MembershipArea} options={{ headerShown: false, tabBarVisible: true }} />
-      <Stack.Screen name="chatPatient" component={ free ? MembershipArea  :PatientChatScreen} options={{ headerShown: true, tabBarVisible: false, title: "Chat" }} />
+      <Stack.Screen name="chatPatient" component={ !free ? MembershipArea  :PatientChatScreen} options={{ headerShown: true, tabBarVisible: false, title: "Chat" }} />
       <Stack.Screen name="conResult" component={ConsultationResults} options={{ headerShown: false }} />
       <Stack.Screen name="previousConsult" component={PreviousConsultationsScreen} options={{ headerShown: false }} />
       <Stack.Screen name="consultForm" component={ConsultationForm} options={{ headerShown: false }} />

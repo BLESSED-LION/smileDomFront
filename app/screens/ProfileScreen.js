@@ -10,8 +10,7 @@ import { auth } from '../config/firebaseConfig';
 const ProfileScreen = ({ route, navigation }) => {
   const { theme } = useTheme();
   // const { user } = route.params;
-  const u = useSelector((state) => state.user.user);
-  const user = u ? u._j : {image: "", name: "", specialization: "", experience: ""};
+  const user = useSelector((state) => state.user.user);
   const handleGoBack = () => {
     navigation.goBack();
   };

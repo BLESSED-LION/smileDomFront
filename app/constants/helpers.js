@@ -1,5 +1,31 @@
 import { FontAwesome } from '@expo/vector-icons';
 
+export function formatTime(milliseconds) {
+  const currentTime = new Date();
+  const timeDiff = (currentTime - new Date(milliseconds)) / 1000;
+
+  if (timeDiff < 60) {
+      return "just now";
+  } else if (timeDiff < 3600) {
+      const minutes = Math.floor(timeDiff / 60);
+      return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+  } else if (timeDiff < 86400) {
+      return new Date(milliseconds).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+  } else {
+      const messageDate = new Date(milliseconds);
+      const daysDiff = Math.floor((currentTime - messageDate) / (1000 * 60 * 60 * 24));
+
+      if (daysDiff === 1) {
+          return "yesterday";
+      } else if (daysDiff === 2) {
+          return "saturday";
+      } else {
+          const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+          return days[messageDate.getDay()];
+      }
+  }
+}
+
 export function generateRandomGravatarUrl() {
   // Generate a random 8-character MD5 hash
   const randomHash = Math.random().toString(36).substring(2, 10);

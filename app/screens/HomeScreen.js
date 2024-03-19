@@ -1,60 +1,20 @@
 import { FlatList, StyleSheet, View } from 'react-native'
-import { Text } from 'react-native';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import dummyData from '../constants/dummyData';
+import React, { useState } from 'react'
 import { useTheme } from '../constants/theme';
 import { DoctorsNearYou, Post } from '../components';
-// import CompleteModal from '../components/Modal/Modal';
-import { useDispatch, useSelector } from 'react-redux';
-import { Modal, Portal } from 'react-native-paper';
+import { useSelector } from 'react-redux';
+import { Portal } from 'react-native-paper';
 import { Provider as PaperProvider } from 'react-native-paper'
-import InputLogin from '../components/InputLogin';
-import Button from '../components/Button';
-import { addUser, auth, db } from '../config/firebaseConfig';
-import { updateProfile } from 'firebase/auth';
-import { extractLastName, generateRandomGravatarUrl, generateRandomString } from '../constants/helpers';
-import Toast from 'react-native-toast-message'
-import { addDoc, collection, getFirestore, getDoc, where, query, getDocs } from "firebase/firestore";
-// import { getDoctorInfo, getUserInfo } from '../store/actions';
 import { StatusBar } from 'expo-status-bar';
-import {
-  BottomSheetModal,
-  BottomSheetModalProvider,
-} from '@gorhom/bottom-sheet';
 import FloatingButton from '../components/FloatingAction';
 import usePosts from '../hooks/posts';
-import useDoctors from '../hooks/getDoctors';
 
 const HomeScreen = ({ navigation }) => {
   const { theme } = useTheme();
   const user = useSelector((state) => state.user);
-  const [userInfo, setUserInfo] = useState({});
-  const [visible, setVisible] = useState(false)
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const showModal = () => setVisible(false);
-  const hideModal = () => setVisible(false);
-  const dispatch = useDispatch();
-  const bottomSheetModalRef = useRef(null)
-  const snapPoints = useMemo(() => ['25%', '50%'], []);
 
-  // dispatch(getDoctorInfo(doctors));
-
-  const handlePresentModalPress = useCallback(() => {
-    bottomSheetModalRef.current?.present()
-  }, [])
-  const handleSheetChanges = useCallback(index => {
-    console.log("handleSheetChanges", index)
-  }, [])
-
-  const getUser = async () => {
-    const user = auth.currentUser;
-  }
-
-  useEffect(() => {
-    const u = getUser();
-    setUserInfo(u)
-  }, [visible])
+  const { user: u } = user;
+  const isDoctor = u ? u.isDoctor : false;
 
   const allPosts = usePosts()
 
@@ -65,53 +25,11 @@ const HomeScreen = ({ navigation }) => {
     return dateB - dateA; // Sort by descending order (most recent first)
   });
 
-  const handlePress = async () => {
-    const u = await getUser()
-    const additionalInfo = {
-      type: u ? u.type : "patient",
-    };
-
-    updateProfile(auth.currentUser, {
-      displayName: name + " " + additionalInfo.type, photoURL: generateRandomGravatarUrl(), email: email, additionalInfo: additionalInfo
-    }).then(() => {
-      const creds = { id: user && user.user.uid, name: name, email: email, phoneNumber: user && user.user.phoneNumber, type: "patient" }
-      if (auth.currentUser && !u) {
-        addUser(creds);
-      } else {
-        // setV1(false)
-        Toast.show({
-          text1: 'Profile already up to date',
-          type: 'success', // Can be 'success', 'info', 'warning', or 'error'
-          position: 'top', // Can be 'top', 'center', or 'bottom'
-          duration: 3000, // Duration in milliseconds
-        });
-      }
-    }).then(() => {
-      Toast.show({
-        text1: 'Profile updated successfully',
-        // text2: 'Additional text can go here',
-        type: 'success', // Can be 'success', 'info', 'warning', or 'error'
-        position: 'top', // Can be 'top', 'center', or 'bottom'
-        duration: 3000, // Duration in milliseconds
-      });
-      setVisible(false)
-    }).catch((error) => {
-      Toast.show({
-        text1: 'An error occured while updating',
-        // text2: 'Additional text can go here',
-        type: 'error', // Can be 'success', 'info', 'warning', or 'error'
-        position: 'top', // Can be 'top', 'center', or 'bottom'
-        duration: 3000, // Duration in milliseconds
-      });
-    });
-  }
-
   return (
     <PaperProvider>
-      <BottomSheetModalProvider>
         <Portal style={{ flex: 1}}>
           <View style={{ position: 'absolute', bottom: 20, zIndex: 1000, right: 20}}>
-            <FloatingButton/>
+            {isDoctor && <FloatingButton/>}
           </View>
           <FlatList
             ListHeaderComponent={<DoctorsNearYou />}
@@ -130,49 +48,10 @@ const HomeScreen = ({ navigation }) => {
             }}
             contentContainerStyle={{ paddingBottom: 100 }}
           />
-          <Modal
-            visible={visible}
-            onDismiss={hideModal}
-            contentContainerStyle={styles.modal}
-          >
-            <Text>Almost done! Please for the info below</Text>
-            <InputLogin ititle="Name" handleInput={setName} />
-            <InputLogin ititle="Email" handleInput={setEmail} />
-            <Button
-              title={"Submit"}
-              onPress={handlePress}
-              textColor={theme.colors.White}
-              buttonColor={theme.colors.Primary}
-            />
-          </Modal>
         </Portal>
         <StatusBar backgroundColor={'#BFD101'} />
-        <BottomSheetModal
-          ref={bottomSheetModalRef}
-          index={1}
-          snapPoints={snapPoints}
-          onChange={handleSheetChanges}
-        >
-          <View style={styles.contentContainer}>
-            <Text>Awesome 🎉</Text>
-          </View>
-        </BottomSheetModal>
-      </BottomSheetModalProvider>
     </PaperProvider>
   )
 }
 
 export default HomeScreen
-
-const styles = StyleSheet.create({
-  portal: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modal: {
-    backgroundColor: "white",
-    padding: 20,
-  }
-})
