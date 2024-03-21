@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
 import { useMutation, gql } from '@apollo/client';
 import Toast from 'react-native-toast-message';
 import { WebView } from 'react-native-webview';
@@ -66,7 +66,7 @@ const PaymentsScreen = ({ route, navigation }) => {
     };
 
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container}>
             {paymentUrl ? (
                 <WebView source={{ uri: paymentUrl }} />
             ) : (
@@ -87,7 +87,7 @@ const PaymentsScreen = ({ route, navigation }) => {
                     </TouchableOpacity>
                 </>
             )}
-        </View>
+        </SafeAreaView>
     );
 };
 

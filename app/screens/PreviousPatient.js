@@ -3,21 +3,21 @@ import { SafeAreaView, TouchableOpacity, Image, View, Text, FlatList, StyleSheet
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useQuery } from '@apollo/client';
-import { GET_CONSULTATIONS_BY_DOCTOR } from '../constants/mutations';
+import { GET_CONSULTATIONS_BY_DOCTOR, GET_CONSULTATIONS_FOR_PATIENT } from '../constants/mutations';
 import Toast from 'react-native-toast-message';
 import { formatTime, formatTimestampLikeWhatsApp } from '../constants/helpers';
 
-const PreviousConsultationsScreen = ({ route }) => {
+const PreviousPatient = ({ route }) => {
     const { patient, doctor } = route.params;
     const navigation = useNavigation();
     const [consultations, setConsultations] = useState([]);
-    const { loading, error, data } = useQuery(GET_CONSULTATIONS_BY_DOCTOR, {
-        variables: { doctorId: doctor._id }
+    const { loading, error, data } = useQuery(GET_CONSULTATIONS_FOR_PATIENT, {
+        variables: { patientId: patient._id }
     });
 
     useEffect(() => {
-        if (data && data.consultationsByDoctor) {
-            setConsultations(data.consultationsByDoctor);
+        if (data && data.consultationsForPatient) {
+            setConsultations(data.consultationsForPatient);
             console.log(data)
             Toast.show({
                 text1: "Loaded succesfully",
@@ -39,7 +39,7 @@ const PreviousConsultationsScreen = ({ route }) => {
         >
             <Ionicons name="medkit" style={styles.consultationIcon} size={40} color={'#2FA8E5'} />
             <View>
-                <Text style={styles.consultationName}>{index} {patient.name}</Text>
+                <Text style={styles.consultationName}>{index} {item.doctor.name}</Text>
                 <Text style={styles.consultationDate}>{formatTime(parseFloat(item.date))}</Text>
             </View>
         </TouchableOpacity>
@@ -129,4 +129,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default PreviousConsultationsScreen;
+export default PreviousPatient;

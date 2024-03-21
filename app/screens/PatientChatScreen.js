@@ -12,11 +12,12 @@ import { GET_CHAT_MESSAGE, SEND_MESSAGE } from '../constants/mutations';
 const PatientChatScreen = ({ route }) => {
     const [messages, setMessages] = useState([]);
     const [text, setText] = useState('');
+    const [sendingMessage, setSendingMessage] = useState(false);
     const { theme } = useTheme();
     const { doc } = route.params;
     const user = useSelector((state) => state.user);
-    const senderId = user.user.uuid;
-    const receiverId = doc.uuid;
+    const senderId = user.user && user.user.uuid;
+    const receiverId = doc && doc.uuid;
     const navigation = useNavigation();
     const u = useSelector((state) => state.user.user);
 
@@ -24,7 +25,7 @@ const PatientChatScreen = ({ route }) => {
 
     const { loading: ld, data } = useQuery(GET_CHAT_MESSAGE, {
         variables: { senderId, receiverId },
-        pollInterval: 5000, // Poll every 5 seconds
+        pollInterval: 3000, // Poll every 5 seconds
     });
 
     useEffect(() => {
@@ -42,12 +43,13 @@ const PatientChatScreen = ({ route }) => {
 
             const sortedMessages = formattedMessages.sort((a, b) => b.createdAt - a.createdAt);
             setMessages(sortedMessages);
+            setSendingMessage(false)
         }
     }, [data]);
 
     const onSend = useCallback(async (newMessages = []) => {
         const { _id, text } = newMessages[0];
-        setMessages(previousMessages => GiftedChat.append(previousMessages, newMessages));
+        setSendingMessage(true)
 
         try {
             await sendMessage({
@@ -62,7 +64,7 @@ const PatientChatScreen = ({ route }) => {
         <View style={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity>
-                    <Image source={doc.image ? { uri: doc.image } : require("../../assets/icon.png")} style={styles.profileImage} />
+                    <Image source={require("../../assets/icon.png")} style={styles.profileImage} />
                 </TouchableOpacity>
                 <View style={styles.userInfo}>
                     <TouchableOpacity style={styles.userName}>
@@ -76,7 +78,7 @@ const PatientChatScreen = ({ route }) => {
                         <TouchableOpacity style={styles.tico} onPress={() => navigation.navigate("videoCallScreen")}>
                             <FontAwesome name="video-camera" size={24} color={theme.colors.yellow} />
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.tico} onPress={() => navigation.navigate("previousConsult", { patient: u, doctor: user.user })}>
+                        <TouchableOpacity style={styles.tico} onPress={() => navigation.navigate("previousConsult", { patient: u, doctor: doc })}>
                             <FontAwesome name="book" size={24} color={theme.colors.yellow} />
                         </TouchableOpacity>
                     </View>
@@ -97,6 +99,7 @@ const PatientChatScreen = ({ route }) => {
                     renderSend={renderSend}
                     user={{ _id: user.user.uuid }}
                 />
+                {sendingMessage && <ActivityIndicator style={{alignSelf:"center", marginTop: 50}} />}
             </View>
         </View>
     );

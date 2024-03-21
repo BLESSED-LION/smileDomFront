@@ -1,310 +1,250 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, ScrollView } from 'react-native';
-import { Ionicons, Fontisto } from '@expo/vector-icons';
-import { TextInput, IconButton } from 'react-native-paper';
+import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView, ActivityIndicator } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { TextInput } from 'react-native-paper';
 import { Calendar } from 'react-native-calendars';
 import { db } from '../config/firebaseConfig';
 import { addDoc, collection } from 'firebase/firestore';
 import Toast from 'react-native-toast-message';
+import CustomInputModal from '../components/Modal/CustomInputModal'; // Assuming this is your custom modal component
+import useCreateConsultation from '../constants/consultationMutation';
 
 const ConsultationForm = ({ navigation, route }) => {
     const [activeTab, setActiveTab] = useState(0);
+    const [ld, setLD] = useState(false);
     const [inputFields, setInputFields] = useState([[{}], [{}], [{}], [{}], [{}], [{}], [{}], [{}]]);
+    const [tabHeadings, setTabHeadings] = useState(['Complains', 'Medical History', 'Examinations', 'Diagnosis', 'Work Ups', 'Treatment', 'Appointment']);
     const { patient, doctor } = route.params;
     const [selectedDate, setSelectedDate] = useState('');
-    const [loading, setLoading] = useState(false)
+    const [editingTabIndex, setEditingTabIndex] = useState(null); // Track the index of the tab being edited
+    const [createConsultationHandler, loading, error] = useCreateConsultation();
 
+    function organizeConsultationData(inputFields, headings) {
+        const consultationData = {};
+
+        // Loop through headings
+        for (let i = 0; i < headings.length; i++) {
+            const heading = headings[i];
+            const fieldValues = inputFields[i]; // Get corresponding input fields for the heading
+
+            // Check if any value exists for the current heading
+            if (fieldValues && fieldValues.length > 0) {
+                // Extract content, handling empty fields:
+                consultationData[heading] = fieldValues.map(field => field.value || ''); // Default empty value to ''
+            } else {
+                consultationData[heading] = []; // Set an empty array for headings without input
+            }
+        }
+
+        return consultationData;
+    }
+
+    if (error) {
+        console.warn(error)
+    }
+
+    const handleSubmit = async () => {
+        setLD(true)
+        const dat = organizeConsultationData(inputFields, tabHeadings);
+        const keys = Object.keys(dat);
+        const values = Object.values(dat).map(array => array[0]);
+        const consultationData = {
+            patient: patient.id,
+            doctor: doctor._id,
+            // date: Date.now,
+            headings: keys,
+            content: values,
+        };
+
+        try {
+            const createdConsultation = await createConsultationHandler(consultationData);
+
+            if (createdConsultation) {
+                console.log(createdConsultation)
+                Toast.show({
+                    text1: "Consultation updated succesfully",
+                    type: "info", // Can be 'success', 'info', 'warning', or 'error'
+                    position: "top", // Can be 'top', 'center', or 'bottom'
+                    duration: 3000, // Duration in milliseconds
+                  });
+                  navigation.navigate("previousConsult", {
+                    patient,
+                    doctor
+                  })
+                // setInputFields([[{}], [{}], [{}], [{}], [{}], [{}], [{}], [{}]]);
+
+            } else if (error) {
+                console.warn(error)
+            }
+            setLD(false)
+        } catch (error) {
+            console.warn(error)
+            setLD(false)
+        }
+    };
     const handleDayPress = (day) => {
         setSelectedDate(day.dateString);
-        console.log(selectedDate)
     };
     const markedDates = {};
     markedDates[selectedDate] = { selected: true };
 
     const handleTabPress = (tab) => {
         setActiveTab(tab);
-        console.log("Active tab is: ", activeTab)
-        console.log("Tabs: ", inputFields)
+        setEditingTabIndex(null); // Clear editing state when switching tabs
     };
 
-    const handleSubmit = () => {
-        setLoading(true)
-        const complains = inputFields[0].map((field, index) => field.value);
-        const history = inputFields[1].map((field, index) => field.value);
-        const examinations = inputFields[2].map((field, index) => field.value);
-        const diagnosis = inputFields[3].map((field, index) => field.value);
-        const workups = inputFields[4].map((field, index) => field.value);
-        const treatment = inputFields[5].map((field, index) => field.value);
-        const appointment = selectedDate;
+    const handleEditTabHeading = (index) => {
+        setEditingTabIndex(index); // Set the index of the tab to be edited
+    };
 
-        const appointmentData = {
-            complains,
-            history,
-            examinations,
-            diagnosis,
-            workups,
-            treatment,
-            appointment,
-            doctor: doctor.id,
-            patient: patient.patient.id
+    const handleSaveEditedTabHeading = (newHeading) => {
+        if (newHeading.trim() === '') {
+            alert('Please enter a valid heading.');
+            return;
         }
-        const appointmentsCollectionRef = collection(db, "appointments");
-        addDoc(appointmentsCollectionRef, appointmentData)
-            .then((docRef) => {
-                console.log("Document written with ID: ", docRef.id);
-                setLoading(false)
-                Toast.show({
-                    text1: 'Consultation made...',
-                    type: 'success', // Can be 'success', 'info', 'warning', or 'error'
-                    position: 'top', // Can be 'top', 'center', or 'bottom'
-                    duration: 3000, // Duration in milliseconds
-                });
-                navigation.goBack()
-            })
-            .catch((error) => {
-                console.error("Error adding document: ", error);
-                setLoading(false)
-                Toast.show({
-                    text1: 'There was an error',
-                    type: 'error', // Can be 'success', 'info', 'warning', or 'error'
-                    position: 'top', // Can be 'top', 'center', or 'bottom'
-                    duration: 3000, // Duration in milliseconds
-                });
-            });
-        console.log(appointmentData)
-    };
 
+        const newHeadings = [...tabHeadings];
+        newHeadings[editingTabIndex] = newHeading;
+        setTabHeadings(newHeadings);
+        setEditingTabIndex(null); // Clear editing state after saving
+    };
 
     const handleAddField = () => {
-        console.log("Adding field...")
         const newFields = [...inputFields];
-        newFields[activeTab].push({ placeholder: "Enter text" }); // Add a new empty object for the field
+        newFields.push([{}]); // Add a new field
         setInputFields(newFields);
+
+        const newHeadings = [...tabHeadings];
+        newHeadings.push('New Field'); // Add a new default heading
+        setTabHeadings(newHeadings);
     };
 
     const handleDeleteField = (fieldIndex) => {
         const newFields = [...inputFields];
-        newFields[activeTab].splice(fieldIndex, 1);
+        newFields.splice(fieldIndex, 1);
         setInputFields(newFields);
+
+        const newHeadings = [...tabHeadings];
+        newHeadings.splice(fieldIndex, 1);
+        setTabHeadings(newHeadings);
     };
+
 
     return (
         <View style={{ flex: 1 }}>
+            {/* Header and tab buttons */}
             <View style={styles.header}>
-                <TouchableOpacity style={{
-                    flexDirection: "row",
-                    justifyContent: "center",
-                    alignItems: "center"
-                }}>
-                    <TouchableOpacity onPress={() => navigation.goBack()}>
-                        <Ionicons name="arrow-back" size={20} color="black" />
-                    </TouchableOpacity>
-                    <Image source={require("../../assets/doctors/2.png")} style={styles.profilePicture} />
+                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                    <Ionicons name="arrow-back" size={24} color="black" />
                 </TouchableOpacity>
                 <Text style={styles.patientName}>Consultation by {doctor.name}</Text>
             </View>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 10, flexWrap: "wrap" }}>
-                <TouchableOpacity onPress={() => handleTabPress(0)}>
-                    <Text style={[{
-                        color: activeTab === 0 ? '#5fbae8' : '#fff',
-                        backgroundColor: activeTab === 0 ? '#fff' : '#5fbae8',
-                        padding: 12,
-                        borderRadius: 15,
-                        fontWeight: "700",
-                        fontSize: 12
-                    }]}>Complains</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleTabPress(1)}>
-                    <Text style={[{
-                        color: activeTab === 1 ? '#5fbae8' : '#fff',
-                        backgroundColor: activeTab === 1 ? '#fff' : '#5fbae8',
-                        padding: 12,
-                        borderRadius: 15,
-                        fontWeight: "700",
-                        fontSize: 12
-                    }]}>Medical History</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleTabPress(2)}>
-                    <Text style={[{
-                        color: activeTab === 2 ? '#5fbae8' : '#fff',
-                        backgroundColor: activeTab === 2 ? '#fff' : '#5fbae8',
-                        padding: 12,
-                        borderRadius: 15,
-                        fontWeight: "700",
-                        fontSize: 12
-                    }]}>Examinations</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleTabPress(3)}>
-                    <Text style={[{
-                        color: activeTab === 3 ? '#5fbae8' : '#fff',
-                        backgroundColor: activeTab === 3 ? '#fff' : '#5fbae8',
-                        padding: 12,
-                        borderRadius: 15,
-                        fontWeight: "700",
-                        fontSize: 12,
-                        marginTop: 10
-                    }]}>Diagnosis</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleTabPress(4)}>
-                    <Text style={[{
-                        color: activeTab === 4 ? '#5fbae8' : '#fff',
-                        backgroundColor: activeTab === 4 ? '#fff' : '#5fbae8',
-                        padding: 12,
-                        borderRadius: 15,
-                        fontWeight: "700",
-                        fontSize: 12,
-                        marginTop: 10
-                    }]}>Work Ups</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleTabPress(5)}>
-                    <Text style={[{
-                        color: activeTab === 5 ? '#5fbae8' : '#fff',
-                        backgroundColor: activeTab === 5 ? '#fff' : '#5fbae8',
-                        padding: 12,
-                        borderRadius: 15,
-                        fontWeight: "700",
-                        fontSize: 12,
-                        marginTop: 10
-                    }]}>Treatment</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleTabPress(6)}>
-                    <Text style={[{
-                        color: activeTab === 6 ? '#5fbae8' : '#fff',
-                        backgroundColor: activeTab === 6 ? '#fff' : '#5fbae8',
-                        padding: 12,
-                        borderRadius: 15,
-                        fontWeight: "700",
-                        fontSize: 12,
-                        marginTop: 10
-                    }]}>Appointment</Text>
-                </TouchableOpacity>
-                <TouchableOpacity>
-                    <Text style={[{
-                        color: activeTab === 'Report PDF' ? '#e00000' : '#fff',
-                        backgroundColor: activeTab === 'Report PDF' ? '#5fbae8' : '#e00000',
-                        padding: 12,
-                        borderRadius: 15,
-                        fontWeight: "700",
-                        fontSize: 12,
-                        marginTop: 10
-                    }]}>Report PDF</Text>
-                </TouchableOpacity>
+            <View style={styles.tabButtons}>
+                {tabHeadings.map((heading, index) => (
+                    <TouchableOpacity
+                        key={index}
+                        onPress={() => handleTabPress(index)}
+                        onLongPress={() => handleEditTabHeading(index)}
+                    >
+                        {editingTabIndex === index ? (
+                            <CustomInputModal // Use your custom modal component here
+                                value={heading}
+                                placeholder="Enter new heading"
+                                onClose={setEditingTabIndex} // Clear editing state on close
+                                onConfirm={handleSaveEditedTabHeading}
+                            />
+                        ) : (
+                            <Text style={[styles.tabButton, {
+                                color: activeTab === index ? '#5fbae8' : '#fff',
+                                backgroundColor: activeTab === index ? '#fff' : '#5fbae8',
+                            }]}>{heading}</Text>
+                        )}
+                    </TouchableOpacity>
+                ))}
                 <TouchableOpacity onPress={handleAddField}>
-                    <Text style={[{
-                        color: activeTab === 'New Field' ? '#e00000' : '#fff',
-                        backgroundColor: activeTab === 'New Field' ? '#BFD101' : '#BFD101',
-                        padding: 12,
-                        borderRadius: 15,
-                        fontWeight: "700",
-                        fontSize: 12,
-                        marginTop: 10
+                    <Text style={[styles.tabButton, {
+                        color: '#fff',
+                        backgroundColor: '#BFD101',
                     }]}>+ New Field</Text>
                 </TouchableOpacity>
             </View>
-            <ScrollView style={{ padding: 10, flex: 1, backgroundColor: "#fff" }}>
-                {activeTab != 6 ? inputFields[activeTab].map((field, index) => (
-                    <TextInput
-                        key={index}
-                        placeholder={"Enter text"}
-                        style={{
-                            borderWidth: 1,
-                            borderColor: 'gray',
-                            padding: 10,
-                            borderTopWidth: 0,
-                            borderLeftWidth: 0,
-                            borderRightWidth: 0,
-                        }}
-                        right={
-                            <TextInput.Icon
-                                name="close"
-                                onPress={() => handleDeleteField(index)}
-                            />}
-                        value={inputFields[activeTab][index].value ? inputFields[activeTab][index].value : ""}
-                        onChangeText={(newValue) => {
-                            const fields = [...inputFields];
-                            fields[activeTab][index] = { value: newValue };
-                            setInputFields(fields);
-                        }
-                        }
+            {/* Input fields or calendar */}
+            <ScrollView style={styles.tabContent}>
+                {activeTab !== 6 ? (
+                    inputFields[activeTab].map((field, index) => (
+                        <TextInput
+                            key={index}
+                            multiline={true}
+                            numberOfLines={9}
+                            editable={true}
+                            placeholder={tabHeadings[activeTab]}
+                            style={{ backgroundColor: "#F5F5F5" }}
+                            right={<TextInput.Icon name="close" onPress={() => handleDeleteField(index)} />}
+                            value={inputFields[activeTab][index].value ? inputFields[activeTab][index].value : ''}
+                            onChangeText={(newValue) => {
+                                const fields = [...inputFields];
+                                fields[activeTab][index] = { value: newValue };
+                                setInputFields(fields);
+                            }}
+                        />
+                    ))
+                ) : (
+                    <Calendar
+                        onDayPress={handleDayPress}
+                        markedDates={markedDates}
                     />
-                )) : <Calendar
-                    onDayPress={handleDayPress}
-                    markedDates={markedDates}
-                />}
-                <TouchableOpacity onPress={handleSubmit} style={{
-                    backgroundColor: '#5fbae8',
-                    padding: 10,
-                }}>
-                    <Text style={{ textAlign: 'center', backgroundColor: "#5fbae8", color: "#fff" }}>{!loading ? "SUBMIT FORM" : "SUBMITTING..."}</Text>
-                </TouchableOpacity>
+                )}
             </ScrollView>
+            {/* Submit button */}
+            <TouchableOpacity onPress={handleSubmit} style={styles.submitButton}>
+                {!ld && <Text style={styles.submitButtonText}>SUBMIT FORM</Text>}
+                {ld && <ActivityIndicator size="large" color={"#BFD101"} />}
+            </TouchableOpacity>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1, // Fill the entire screen
-        backgroundColor: '#F5F5F5', // Adjust background color as needed
-        padding: 15,
-        // paddingTop: 30, 
-    },
-
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 17
-        // justifyContent: 'space-between',
+        padding: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#ccc',
     },
-
     backButton: {
-        // Adjust styles for the back button icon and container
+        marginRight: 10,
     },
-
-    profilePicture: {
-        width: 30,
-        height: 30,
-        borderRadius: 25,
-    },
-
     patientName: {
         fontSize: 18,
         fontWeight: 'bold',
-        marginLeft: 10,
     },
-
-    consultationCard: {
-        backgroundColor: '#FFFFFF', // Adjust card background color
-        borderRadius: 10,
-        marginBottom: 15,
-        padding: 15,
-        // paddingLeft: 0,
+    tabButtons: {
         flexDirection: 'row',
+        justifyContent: 'space-between',
         alignItems: 'center',
+        padding: 10,
+        flexWrap: 'wrap',
     },
-
-    consultationIcon: {
-        width: 50,
-        height: 50,
-        marginRight: 5,
+    tabButton: {
+        padding: 12,
+        borderRadius: 15,
+        fontWeight: '700',
+        fontSize: 12,
+        marginTop: 10,
     },
-
-    consultationDetails: {
+    tabContent: {
         flex: 1,
+        padding: 10,
+        backgroundColor: '#fff',
     },
-
-    consultationName: {
-        fontSize: 16,
-        fontWeight: 'bold',
+    submitButton: {
+        backgroundColor: '#5fbae8',
+        padding: 10,
     },
-
-    consultationDate: {
-        fontSize: 14,
-        color: '#888', // Adjust text color for date
-        marginTop: 5,
-    },
-    btn: {
-        backgroundColor: '#F5F5F5',
+    submitButtonText: {
+        textAlign: 'center',
+        color: '#fff',
     },
 });
 

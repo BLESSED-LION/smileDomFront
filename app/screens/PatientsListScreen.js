@@ -4,15 +4,17 @@ import { useQuery } from '@apollo/client';
 import { GET_CHATS } from '../constants/mutations';
 import { useNavigation } from '@react-navigation/native';
 import { formatTime } from '../constants/helpers';
+import { useTheme } from '../constants/theme';
 
 const PatientListScreen = () => {
   const { loading, error, data } = useQuery(GET_CHATS);
   const navigation = useNavigation();
+  const { theme } = useTheme()
 
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color={theme.primary} />
         <Text>Loading patients...</Text>
       </View>
     );

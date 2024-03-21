@@ -1,197 +1,199 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, ScrollView, TouchableOpacity, PermissionsAndroid, } from 'react-native';
-import { Button, Card, Paragraph, Title } from 'react-native-paper'; // Example using react-native-paper
-import * as FileSystem from 'expo-file-system';
-// import * as Permissions from 'expo-permissions';
-import { auth } from '../config/firebaseConfig';
+import { View, Text, ScrollView, StyleSheet, Button, Alert, ActivityIndicator, Image } from 'react-native';
+import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
 
-const ConsultationResults = ({ route, navigation }) => {
-  const { data, doctor, patient } = route.params;
-  const dat = data[0];
-  const [loading, setLoading] = useState(false)
-  console.log("Data: ", data)
-
-  const pdfContent = `
-  <h1>Consultation Results</h1>
-  <p>Date: ${dat.appointment}</p>
-  <p>Doctor: ${doctor.name}</p>
-  `;
-
-  const requestStoragePermissions = async () => {
-    const status = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
-    );
-    const status1 = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE
-    );
-    console.log("Status: ", status, " ", status1)
-    if (status !== 'granted') {
-      console.error('Storage permissions not granted');
-      // Handle permission denial (e.g., display a message to the user)
-    } else {
-      console.log('Storage permissions granted!');
-      // Proceed with file download
-    }
-  };
-
+const ConsultationResultScreen = ({ route }) => {
+  const { consultation, patient, doctor } = route.params;
+  const [isLoading, setIsLoading] = useState(false);
 
   const generatePDF = async () => {
-    const filePath = FileSystem.documentDirectory + `${!patient.patient ? auth.currentUser.displayName : patient.patient.name}consultation.pdf`;
-    console.log(filePath)
-
+    setIsLoading(true);
     try {
-      await FileSystem.writeAsStringAsync(filePath, pdfContent, { encoding: FileSystem.EncodingType.UTF8 });
-      console.log('PDF generated successfully! ');
-      // Provide option for user to download the PDF from filePath
+      // Define styles
+      const styles = `
+        body {
+          font-family: Arial, sans-serif;
+          color: #333;
+          margin: 20px;
+        }
+        .header {
+          text-align: center;
+          margin-bottom: 20px;
+        }
+        .logo {
+          width: 100px;
+          height: auto;
+          margin-bottom: 10px;
+        }
+        .watermark {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          color: rgba(0, 0, 0, 0.1);
+          font-size: 100px;
+          font-weight: bold;
+          opacity: 0.5;
+          pointer-events: none;
+        }
+        .section {
+          margin-bottom: 20px;
+        }
+        .heading {
+          font-size: 20px;
+          font-weight: bold;
+          color: #BFD101;
+          text-align: center;
+          margin-bottom: 5px;
+        }
+        .content {
+          font-size: 16px;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 10px;
+        }
+        th, td {
+          border: 1px solid #ddd;
+          padding: 8px;
+          text-align: left;
+        }
+        .signature {
+          margin-top: 50px;
+          text-align: center;
+        }
+        .signature img {
+          width: 150px;
+          height: auto;
+        }
+      `;
+
+      // Generate HTML content
+      let htmlContent = `
+        <html>
+          <head>
+            <style>${styles}</style>
+          </head>
+          <body>
+            <div class="header">
+              <img src="https://i.postimg.cc/FzKLG5k6/Smile-Dom-1.png" alt="Logo" class="logo" />
+              <div class="watermark">
+                <img src="https://i.postimg.cc/FzKLG5k6/Smile-Dom-1.png" alt="" />
+              </div>
+              <p>Patient: ${patient.name}</p>
+              <p>Email: ${patient.email}</p>
+            </div>
+      `;
+
+      // Add consultation data
+      consultation.headings.forEach((heading, index) => {
+        if (heading && consultation.content[index]) {
+          htmlContent += `
+            <div class="section">
+              <h2 class="heading">${heading}</h2>
+              <table>
+                <tbody>
+                  ${consultation.content[index].split('\n').map((line, idx) => `
+                    <tr>
+                      <td>${idx + 1}</td>
+                      <td>${line}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          `;
+        }
+      });
+
+      htmlContent += `
+            <div class="signature">
+              <p>${doctor.name}</p>
+              <img src="https://example.com/signature.png" alt="Signature" />
+            </div>
+          </body>
+        </html>
+      `;
+
+      const pdfPath = await Print.printToFileAsync({ html: htmlContent });
+
+      await Sharing.shareAsync(pdfPath.uri);
     } catch (error) {
       console.error('Error generating PDF:', error);
+      Alert.alert('Error generating PDF. Please try again later.');
+    } finally {
+      setIsLoading(false);
     }
   };
-
-  const downloadPDF = async () => {
-    const fileName = `${!patient.patient ? auth.currentUser.displayName : patient.patient.name}consult.pdf`;
-    const fileUri = `${FileSystem.documentDirectory}${fileName}`;
-    // const options = {
-    //   from: FileSystem.documentDirectory + `${patient.patient.name}consultation.pdf`,
-    //   to: fileUri,
-    // };
-
-    console.log(fileUri)
-    const status = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
-    );
-    if (status === "granted") {
-      try {
-        // const downloadResult = await FileSystem.copyAsync(options);
-        const downloadResult = await FileSystem.downloadAsync(fileUri, FileSystem.documentDirectory + fileName);
-        console.log('Download started:', downloadResult);
-      } catch (error) {
-        console.error('Error downloading PDF:', error);
-      }
-    }
-  };
-
-  const handleDownload = async () => {
-    setLoading(!loading)
-    await requestStoragePermissions()
-    await generatePDF();
-    await downloadPDF();
-    setLoading(!loading)
-  }
-
 
   return (
-    <ScrollView style={styles.container}>
-      <Card style={styles.sectionCard}>
-        <Card.Title title={`Consultation results for ${!patient.patient ? auth.currentUser.displayName : patient.patient.name}`} />
-        <Card.Content>
-          <View style={styles.infoRow}>
-            <Text style={styles.label}>Date:</Text>
-            <Text style={styles.value}>{dat.appointment}</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.label}>Doctor:</Text>
-            <Text style={styles.value}>{doctor.name}</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.label}>Contact:</Text>
-            <Text style={styles.value}>{doctor.phoneNumber}</Text>
-          </View>
-          {/* ... other information fields */}
-        </Card.Content>
-      </Card>
-
-      <Card style={styles.sectionCard}>
-        <Card.Title title="Complaints" />
-        <Card.Content>
-          <FlatList
-            data={dat.complains}
-            renderItem={({ item }) => <Text style={styles.listItem}>- {item}</Text>}
-          />
-        </Card.Content>
-      </Card>
-      <Card style={styles.sectionCard}>
-        <Card.Title title="Diagnosis" />
-        <Card.Content>
-          <FlatList
-            data={dat.diagnosis}
-            renderItem={({ item }) => <Text style={styles.listItem}>- {item}</Text>}
-          />
-        </Card.Content>
-      </Card>
-      <Card style={styles.sectionCard}>
-        <Card.Title title="Examinations" />
-        <Card.Content>
-          <FlatList
-            data={dat.examinations}
-            renderItem={({ item }) => <Text style={styles.listItem}>- {item}</Text>}
-          />
-        </Card.Content>
-      </Card>
-      <Card style={styles.sectionCard}>
-        <Card.Title title="Work ups" />
-        <Card.Content>
-          <FlatList
-            data={dat.workups}
-            renderItem={({ item }) => <Text style={styles.listItem}>- {item}</Text>}
-          />
-        </Card.Content>
-      </Card>
-      <Card style={styles.sectionCard}>
-        <Card.Title title="Treatment" />
-        <Card.Content>
-          <FlatList
-            data={dat.treatment}
-            renderItem={({ item }) => <Text style={styles.listItem}>- {item}</Text>}
-          />
-        </Card.Content>
-      </Card>
-
-      <TouchableOpacity style={{ marginBottom: 35 }}>
-        <Button icon="camera" mode="contained" onPress={() => navigation.navigate("membership")} color='#BFD101'>
-          {!loading ? "Download pdf" : "Downloading..."}
-        </Button>
-      </TouchableOpacity>
-
-      {/* ... other sections for diagnosis, workouts, history, examinations, treatments */}
+    <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.content}>
+        {isLoading ? (
+          <ActivityIndicator size="large" color="#BFD101" />
+        ) : (
+          <>
+            <View style={styles.consultationData}>
+              {consultation.headings.map((heading, index) => (
+                <View key={index} style={styles.section}>
+                  {heading && consultation.content[index] && (
+                    <>
+                      <Text style={styles.heading}>{heading}</Text>
+                      <Text style={styles.content}>
+                        {consultation.content[index].split('\n').map((line, idx) => (
+                          <Text key={idx}>
+                            {idx + 1}. {line}
+                          </Text>
+                        ))}
+                      </Text>
+                    </>
+                  )}
+                </View>
+              ))}
+            </View>
+            <Button 
+              color={"#BFD101"} 
+              title="Generate PDF" 
+              onPress={generatePDF} 
+            />
+          </>
+        )}
+      </View>
     </ScrollView>
   );
 };
 
-export default ConsultationResults;
-
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#fff', // Or a light gray for a paper-like background
+    flexGrow: 1,
+    backgroundColor: '#FFFFFF',
     padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-
-  sectionCard: {
-    borderRadius: 10,
+  content: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  consultationData: {
+    marginTop: 20,
+  },
+  section: {
     marginBottom: 20,
-    padding: 15,
-    backgroundColor: '#f5f5f5', // Slightly darker for card-like sections
   },
-
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-
-  label: {
+  heading: {
+    fontSize: 20,
     fontWeight: 'bold',
-    fontSize: 14,
-  },
-
-  value: {
-    fontSize: 14,
-  },
-
-  listItem: {
+    color: '#BFD101',
+    textAlign: 'center',
     marginBottom: 5,
   },
-
-  /* Additional styles for headings, text formatting, etc. */
+  content: {
+    fontSize: 16,
+  },
 });
+
+export default ConsultationResultScreen;

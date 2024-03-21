@@ -11,6 +11,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import PaymentsScreen from "./PaymentScreen";
 import { useSelector } from "react-redux";
 import VideoCallScreen from "./VideoCallScreen";
+import PreviousPatient from "./PreviousPatient";
 
 const Stack = createStackNavigator();
 
@@ -26,9 +27,9 @@ function ConsultScreenHome() {
     >
       <Stack.Screen name="HomeMainScreen" component={ConsultScreen} />
       <Stack.Screen name="membership" component={MembershipArea} options={{ headerShown: false, tabBarVisible: true }} />
-      <Stack.Screen name="chatPatient" component={ !free ? MembershipArea  :PatientChatScreen} options={{ headerShown: true, tabBarVisible: false, title: "Chat" }} />
+      <Stack.Screen name="chatPatient" component={ free ? MembershipArea  :PatientChatScreen} options={{ headerShown: true, tabBarVisible: false, title: "Chat" }} />
       <Stack.Screen name="conResult" component={ConsultationResults} options={{ headerShown: false }} />
-      <Stack.Screen name="previousConsult" component={PreviousConsultationsScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="previousConsult" component={PreviousPatient} options={{ headerShown: false }} />
       <Stack.Screen name="consultForm" component={ConsultationForm} options={{ headerShown: false }} />
       <Stack.Screen name="callScreen" component={CallScreen} options={{ headerShown: false }} />
       <Stack.Screen name="PaymentDetails" component={PaymentsScreen} options={{ headerShown: false }} />

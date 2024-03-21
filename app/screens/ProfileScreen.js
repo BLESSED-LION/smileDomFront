@@ -10,7 +10,8 @@ import { auth } from '../config/firebaseConfig';
 const ProfileScreen = ({ route, navigation }) => {
   const { theme } = useTheme();
   // const { user } = route.params;
-  const user = useSelector((state) => state.user.user);
+  const u = useSelector((state) => state.user);
+  const {user} = u;
   const handleGoBack = () => {
     navigation.goBack();
   };
@@ -133,7 +134,7 @@ const ProfileScreen = ({ route, navigation }) => {
 
         </View>
 
-        {user.type === "doctor" &&
+        {user && user.type === "doctor" &&
         <View
         style={{
           flexDirection:'row',
@@ -233,7 +234,7 @@ const ProfileScreen = ({ route, navigation }) => {
             >{"@" + user.name}</Text>
           </View>
 
-          {user.type === "doctor" && <View
+          {user && user.type === "doctor" && <View
           style={{
             marginBottom: 20
           }}

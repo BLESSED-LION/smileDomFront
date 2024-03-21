@@ -44,3 +44,36 @@ query userChats{
     }
   }
 `;
+
+export const GET_CONSULTATIONS_BY_DOCTOR = gql`
+  query GetConsultationsByDoctor($doctorId: ID!) {
+    consultationsByDoctor(doctorId: $doctorId) {
+      id
+      patient {
+        id
+        name
+      }
+      date
+      headings
+      content
+    }
+  }
+`;
+export const GET_CONSULTATIONS_FOR_PATIENT = gql`
+  query GetConsultationsForPatient($patientId: ID!) {
+    consultationsForPatient(patientId: $patientId) {
+      id
+      patient {
+        id
+        name
+      }
+      doctor {
+        id
+        name
+      }
+      date
+      headings
+      content
+    }
+  }
+`;

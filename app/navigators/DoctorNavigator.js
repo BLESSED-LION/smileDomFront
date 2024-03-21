@@ -16,6 +16,7 @@ import UpdateProfileScreen from '../screens/UpdateProfileScreen';
 import MembershipArea from '../screens/MembershipArea';
 import CreatePost from '../screens/CreatePostScreen';
 import PaymentsScreen from '../screens/PaymentScreen';
+import ConsultationResults from '../screens/ConsultationResultScreen';
 
 const Stack = createStackNavigator();
 
@@ -27,8 +28,11 @@ const DoctorNavigator = () => {
       <Stack.Screen name="doctor" component={DoctorInfoScreen} options={{ headerShown: false }} />
       <Stack.Screen name="profile" component={ProfileScreen} options={{ headerShown: false }} />
       <Stack.Screen name="chatDoctor" component={ChatScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="previousConsult" component={PreviousConsultationsScreen} options={{ headerShown: false }} />
       <Stack.Screen name="notifications" component={NotificationsScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="consultForm" component={ConsultationForm} options={{ headerShown: false }} />
       <Stack.Screen name="createPost" component={CreatePost} options={{ headerShown: false }} />
+      <Stack.Screen name="conResult" component={ConsultationResults} options={{ headerShown: false }} />
     </Stack.Navigator>
   )
 }

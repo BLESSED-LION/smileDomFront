@@ -64,9 +64,11 @@ const LoginScreen = () => {
       if(graphQLErrors){
         errorMessage = graphQLErrors[0].message
       }
+      if(networkError){
+        errorMessage = networkError.message
+      }
       Toast.show({
         text1: errorMessage,
-        // text2: 'Additional text can go here',
         type: "error", // Can be 'success', 'info', 'warning', or 'error'
         position: "top", // Can be 'top', 'center', or 'bottom'
         duration: 3000, // Duration in milliseconds
@@ -85,7 +87,18 @@ const LoginScreen = () => {
       return;
     }
     setLoading(true);
-    authUser({ variables: { email_or_phone: emailOrPhone, password: password } });
+    authUser({ variables: { email_or_phone: emailOrPhone, password: password } }).then((data) => {
+      console.log(data);
+      setLoading(false);
+    }).catch((error) => {
+      console.warn(error);
+      Toast.show({
+        text1: "There was an unexpected error",
+        type: "error", // Can be 'success', 'info', 'warning', or 'error'
+        position: "top", // Can be 'top', 'center', or 'bottom'
+        duration: 3000, // Duration in milliseconds
+      });
+    })
   };
 
   const handleTextChange = (value) => {

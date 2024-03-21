@@ -35,7 +35,7 @@ const SettingsScreen = ({navigation}) => {
         </Text>
       </View>
 
-      {u.type === "doctor" &&
+      {u && u.type === "doctor" &&
       <View style={styles.statsContainer}>
         <View style={styles.statContainer}>
           <Text style={styles.statCount}>0</Text>
