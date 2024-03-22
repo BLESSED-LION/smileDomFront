@@ -9,7 +9,8 @@ import {
   Alert,
   TouchableWithoutFeedback,
   Keyboard,
-  ActivityIndicator
+  ActivityIndicator,
+  ScrollView
 } from "react-native";
 import { Button } from "react-native-paper";
 import { gql, useMutation } from "@apollo/client";
@@ -17,10 +18,11 @@ import { lightTheme } from "../constants/theme";
 import AppButton from "../components/Button";
 import { useTheme } from "../constants/theme";
 import * as ImagePicker from "expo-image-picker";
+import { useSelector } from "react-redux";
 
 const CREATE_POST_MUTATION = gql`
-  mutation CreatePost($title: String!, $content: String!, $image: String!) {
-    createPost(title: $title, content: $content, image: $image) {
+  mutation CreatePost($title: String!, $content: String!, $image: String!, $id: ID!) {
+    createPost(title: $title, content: $content, image: $image, id: $id) {
       id
     }
   }
@@ -31,6 +33,8 @@ const CreatePost = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [image, setImage] = useState("");
+  const u = useSelector((state) => state.user);
+  const { user } = u;
 
   const pickImage = async () => {
     if (Platform.OS !== "web") {
@@ -57,12 +61,12 @@ const CreatePost = () => {
     useMutation(CREATE_POST_MUTATION);
 
   const handleSubmit = () => {
-    console.log("okay ");
+    console.log(user);
     if (!title.trim() || !content.trim() || !image) {
       Alert.alert("Please fill in all fields");
       return;
     }
-    createPost({ variables: { title, content, image } });
+    createPost({ variables: { title, content, image, id: user._id } });
 
     // clear all fields
     setTitle("");
@@ -90,7 +94,7 @@ const CreatePost = () => {
 
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-      <View style={styles.container}>
+      <ScrollView style={styles.container}>
         <View>
           <Text
             style={{
@@ -168,11 +172,11 @@ const CreatePost = () => {
           onPress={() => {
             handleSubmit();
           }}
-          style={{ backgroundColor: lightTheme.colors.Primary }}
+          style={{ backgroundColor: lightTheme.colors.Primary, marginBottom: 40 }}
         >
           Create
         </Button>
-      </View>
+      </ScrollView>
     </TouchableWithoutFeedback>
   );
 };

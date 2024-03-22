@@ -12,12 +12,14 @@ const PreviousConsultationsScreen = ({ route }) => {
     const navigation = useNavigation();
     const [consultations, setConsultations] = useState([]);
     const { loading, error, data } = useQuery(GET_CONSULTATIONS_BY_DOCTOR, {
-        variables: { doctorId: doctor._id }
+        variables: { doctorId: doctor._id },
+        pollInterval: 5000,
     });
 
     useEffect(() => {
         if (data && data.consultationsByDoctor) {
-            setConsultations(data.consultationsByDoctor);
+            const sorted = [...data.consultationsByDoctor].reverse();
+            setConsultations(sorted);
             console.log(data)
             Toast.show({
                 text1: "Loaded succesfully",
@@ -39,7 +41,7 @@ const PreviousConsultationsScreen = ({ route }) => {
         >
             <Ionicons name="medkit" style={styles.consultationIcon} size={40} color={'#2FA8E5'} />
             <View>
-                <Text style={styles.consultationName}>{index} {patient.name}</Text>
+                <Text style={styles.consultationName}>{index} {item.patient.name}</Text>
                 <Text style={styles.consultationDate}>{formatTime(parseFloat(item.date))}</Text>
             </View>
         </TouchableOpacity>
@@ -81,7 +83,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#F5F5F5',
         padding: 15,
-        marginTop: 30
+        // marginTop: 30
     },
 
     header: {

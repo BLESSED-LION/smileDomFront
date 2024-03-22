@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, ActivityIndicator, Keyboard } from 'react-native'; // Import Keyboard
 import { GiftedChat } from 'react-native-gifted-chat';
 import { FontAwesome } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,7 +14,7 @@ const ChatScreen = ({ route, navigation }) => {
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(true);
     const [call, setCall] = useState(false);
-    const [sendingMessage, setSendingMessage] = useState(false); // State to track if a message is being sent
+    const [sendingMessage, setSendingMessage] = useState(false);
     const user = useSelector((state) => state.user);
     const { patient } = route.params;
     const { user: doctor } = user;
@@ -26,7 +26,7 @@ const ChatScreen = ({ route, navigation }) => {
 
     const { loading: ld, error: err, data, refetch } = useQuery(GET_CHAT_MESSAGE, {
         variables: { senderId, receiverId },
-        pollInterval: 3000, // Poll every 5 seconds
+        pollInterval: 3000,
     });
 
     useEffect(() => {
@@ -41,7 +41,6 @@ const ChatScreen = ({ route, navigation }) => {
                 }
             }));
 
-            // Sort messages in ascending order based on createdAt timestamp
             const sortedMessages = formattedMessages.sort((a, b) => b.createdAt - a.createdAt);
 
             setMessages(sortedMessages);
@@ -52,7 +51,6 @@ const ChatScreen = ({ route, navigation }) => {
     const onSend = useCallback(async (newMessages = []) => {
         const { _id, createdAt, text, user } = newMessages[0];
 
-        // Set sendingMessage state to true to display loading indicator
         setSendingMessage(true);
 
         try {
@@ -67,7 +65,9 @@ const ChatScreen = ({ route, navigation }) => {
             console.error("Error sending message:", error);
         }
 
-        // Set sendingMessage state to false after message is sent
+        // Dismiss the keyboard when a message is sent
+        Keyboard.dismiss();
+
     }, [sendMessage, senderId, receiverId]);
 
     return (
@@ -107,14 +107,13 @@ const ChatScreen = ({ route, navigation }) => {
                     onSend={onSend}
                     alwaysShowSend
                     user={{
-                        _id: doctor.uuid, // Current user's ID
+                        _id: doctor.uuid,
                     }}
-                    renderInputToolbar={renderInputToolbar} // Use custom input toolbar
-                    renderActions={renderActions} // Use custom actions component
-                    renderComposer={renderComposer} // Use custom composer component
-                    renderSend={renderSend} // Use custom send component
+                    renderInputToolbar={renderInputToolbar}
+                    renderActions={renderActions}
+                    renderComposer={renderComposer}
+                    renderSend={renderSend}
                 />
-                {/* Display loading indicator while sending message */}
                 {sendingMessage && <ActivityIndicator style={{alignSelf:"center", marginTop: 50}} />}
             </View>
         </View>

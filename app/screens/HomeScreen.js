@@ -19,11 +19,7 @@ const HomeScreen = ({ navigation }) => {
   const allPosts = usePosts()
 
   // Sorting the posts by publishDate
-  const sortedPosts = allPosts.sort((postA, postB) => {
-    const dateA = new Date(postA.publishDate);
-    const dateB = new Date(postB.publishDate);
-    return dateB - dateA; // Sort by descending order (most recent first)
-  });
+  const sortedPosts = [...allPosts].reverse();
 
   return (
     <PaperProvider>

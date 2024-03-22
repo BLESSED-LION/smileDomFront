@@ -21,7 +21,8 @@ const GET_COMMENTS = gql`
       createdAt
       user {
         id,
-        email
+        email,
+        name
       }
     }
   }
@@ -362,7 +363,7 @@ const Post = ({ post, onPress}) => {
           <Text>Comments:</Text>
           {postComments.map((comment, i) => (
             <View key={i} style={{ margin: 10 }}>
-              <Text style={{ fontWeight: "bold" }}>{comment.user.email}</Text>
+              <Text style={{ fontWeight: "bold" }}>{comment.user.name}</Text>
               <Text>{comment.content}</Text>
             </View>
           ))}

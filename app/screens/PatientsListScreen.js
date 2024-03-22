@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Image, ActivityIndicator, SafeAreaView } from 'react-native';
 import { useQuery } from '@apollo/client';
 import { GET_CHATS } from '../constants/mutations';
 import { useNavigation } from '@react-navigation/native';
@@ -9,62 +9,69 @@ import { useTheme } from '../constants/theme';
 const PatientListScreen = () => {
   const { loading, error, data } = useQuery(GET_CHATS);
   const navigation = useNavigation();
-  const { theme } = useTheme()
+  const { theme } = useTheme();
 
   if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={theme.primary} />
-        <Text>Loading patients...</Text>
-      </View>
-    );
+    return <LoadingIndicator />;
   }
 
   if (error) {
-    return (
-      <View style={styles.errorContainer}>
-        <Text>Error: {error.message}</Text>
-      </View>
-    );
+    return <ErrorContainer message={`Error: ${error.message}`} />;
   }
 
   const { userChats } = data;
 
   const renderPatientItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.patientItem}
-      onPress={() => navigation.navigate('chatDoctor', { patient: item })}
-    >
-      <Image source={!item.avatar ? require("../../assets/doctor.png") : {uri: item.avatar}} style={styles.avatar} />
-            <View style={styles.patientInfo}>
-                <Text style={styles.patientName}>{item.name}</Text>
-                <View style={styles.lastMessageContainer}>
-                    <Text style={styles.lastMessage}>{item.lastMessage}</Text>
-                </View>
-            </View>
-            <View>
-                {item.unreadMessages > 0 && (
-                    <View style={styles.unreadBadge}>
-                        <Text style={styles.unreadCount}>{item.unreadMessages}</Text>
-                    </View>
-                )}
-                {console.log(formatTime(parseFloat(item.lastMessageTime)))}
-                <Text style={styles.lastMessageTime}>{formatTime(parseFloat(item.lastMessageTime))}</Text>
-            </View>
-    </TouchableOpacity>
+    <PatientItem item={item} navigation={navigation} />
   );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <FlatList
         data={userChats}
         renderItem={renderPatientItem}
-        keyExtractor={item => item.id}
+        keyExtractor={item => item.id.toString()}
         contentContainerStyle={styles.patientList}
       />
-    </View>
+    </SafeAreaView>
   );
 };
+
+const PatientItem = ({ item, navigation }) => (
+  <TouchableOpacity
+    style={styles.patientItem}
+    onPress={() => navigation.navigate('chatDoctor', { patient: item })}
+  >
+    <Image source={!item.avatar ? require("../../assets/doctor.png") : {uri: item.avatar}} style={styles.avatar} />
+    <View style={styles.patientInfo}>
+      <Text style={styles.patientName}>{item.name}</Text>
+      <View style={styles.lastMessageContainer}>
+        <Text style={styles.lastMessage}>{item.lastMessage}</Text>
+      </View>
+    </View>
+    <View>
+      {item.unreadMessages > 0 && (
+        <View style={styles.unreadBadge}>
+          <Text style={styles.unreadCount}>{item.unreadMessages}</Text>
+        </View>
+      )}
+      <Text style={styles.lastMessageTime}>{formatTime(parseFloat(item.lastMessageTime))}</Text>
+    </View>
+  </TouchableOpacity>
+);
+
+const LoadingIndicator = () => (
+  <View style={styles.loadingContainer}>
+    <ActivityIndicator size="large" color={theme.primary} />
+    <Text>Loading patients...</Text>
+  </View>
+);
+
+const ErrorContainer = ({ message }) => (
+  <View style={styles.errorContainer}>
+    <Text>{message}</Text>
+  </View>
+);
 
 const styles = StyleSheet.create({
   container: {
