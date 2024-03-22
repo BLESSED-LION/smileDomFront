@@ -9,7 +9,6 @@ import { useTheme } from '../constants/theme';
 const PatientListScreen = () => {
   const { loading, error, data } = useQuery(GET_CHATS);
   const navigation = useNavigation();
-  const { theme } = useTheme();
 
   if (loading) {
     return <LoadingIndicator />;
@@ -60,12 +59,14 @@ const PatientItem = ({ item, navigation }) => (
   </TouchableOpacity>
 );
 
-const LoadingIndicator = () => (
+const LoadingIndicator = () => {
+  const { theme } = useTheme();
+  return(
   <View style={styles.loadingContainer}>
     <ActivityIndicator size="large" color={theme.primary} />
     <Text>Loading patients...</Text>
   </View>
-);
+);}
 
 const ErrorContainer = ({ message }) => (
   <View style={styles.errorContainer}>
