@@ -29,7 +29,6 @@ const LoginScreen = () => {
   const { theme } = useTheme();
   const dispatch = useDispatch();
   const navigation = useNavigation();
-  // const {recaptcha,recaptchaBanner,sendOtp,verifyOtp} = useFirebaseLogin({auth: auth,firebaseConfig:firebaseConfig});
   const [emailOrPhone, setEmailOrPhone] = useState("");
   const [password, setPassword] = useState("");
   const [isPasswordVisible, setIsPasswordVisible] = useState(true);

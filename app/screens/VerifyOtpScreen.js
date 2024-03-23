@@ -9,14 +9,11 @@ import {
 } from 'react-native';
 import { CodeField, Cursor, useBlurOnFulfill, useClearByFocusCell } from
     'react-native-confirmation-code-field';
-// import { Button } from '../../../components';
 import { styles } from '../constants/style';
 import { lightTheme } from '../constants/theme';
 import { useTheme } from '../constants/theme';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useDispatch } from 'react-redux';
-// import { getUserInfo, loginSuccess } from '../store/actions';
-import { addUser, getUser } from '../config/firebaseConfig';
 import Toast from 'react-native-toast-message';
 import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator } from 'react-native-paper';

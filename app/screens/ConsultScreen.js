@@ -4,8 +4,6 @@ import { useTheme } from '../constants/theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import DoctorList from '../components/DoctorList';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import {db} from "../config/firebaseConfig"
 import useDoctors from '../hooks/getDoctors';
 
 

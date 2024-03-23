@@ -18,7 +18,6 @@ import LoginInput from "../components/LoginInput";
 import AppButton from "../components/AppButton";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useMutation, gql } from "@apollo/client";
-import { auth, app, firebaseConfig } from "../config/firebaseConfig";
 import { useDispatch } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import { register } from "../store/userSlice";

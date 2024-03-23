@@ -4,22 +4,15 @@ import { useTheme } from '../constants/theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ActivityIndicator, Badge } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
-import { auth, db } from '../config/firebaseConfig';
-import { collection, getDocs, limit, orderBy, query, where } from 'firebase/firestore';
-import { convertTimeToWhatsAppStyle, filterUniqueAndSortByCreatedAt, formatTimestampLikeWhatsApp, sortMessagesByCreatedAt } from '../constants/helpers';
-import { usePatients } from '../hooks/patients';
+import { filterUniqueAndSortByCreatedAt } from '../constants/helpers';
 import { useSelector } from 'react-redux';
-import { useDoctor } from '../hooks/doctor';
-import FloatingButton from '../components/FloatingAction';
 
 const PatientsScreen = ({route}) => {
   const { theme } = useTheme();
   const navigation = useNavigation()
-  // const {doctor} = useDoctor(auth.currentUser.uid)
   const [patients, setPatients] = useState([])
   const [msgs, setMsgs] = useState([])
   const [searchQuery, setSearchQuery] = useState('');
-  // const { patientData, loading: ld } = usePatients(auth.currentUser.uid);
   const u = useSelector((state) => state.user.user);
   const us = u._j ? u._j : {patientsData: []}
   const p = filterUniqueAndSortByCreatedAt(us.patientsData);

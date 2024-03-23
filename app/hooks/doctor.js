@@ -1,6 +1,4 @@
-import { collection, query, where, getDocs } from "firebase/firestore";
 import { useState, useEffect } from "react";
-import { db } from "../config/firebaseConfig";
 
 export const useDoctor = (id) => {
     const [doctor, setDoctor] = useState([]);

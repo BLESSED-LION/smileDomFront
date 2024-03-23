@@ -1,10 +1,7 @@
 import { Text, View, Image, FlatList, TouchableOpacity } from 'react-native';
 import { useTheme } from '../constants/theme';
 import React from 'react';
-import dummyData from '../constants/dummyData';
 import { useSelector } from 'react-redux';
-import { auth } from '../config/firebaseConfig';
-import { extractAllButLastName } from '../constants/helpers';
 import useDoctors from '../hooks/getDoctors';
 import { useNavigation } from '@react-navigation/native';
 

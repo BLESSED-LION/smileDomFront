@@ -77,3 +77,24 @@ export const GET_CONSULTATIONS_FOR_PATIENT = gql`
     }
   }
 `;
+
+export const GET_NOTIFICATIONS = gql`
+  query GetNotifications($userId: ID!) {
+    notifications(userId: $userId) {
+      id
+      message
+      userId
+      read
+      createdAt
+    }
+  }
+`;
+
+export const MARK_NOTIFICATION_AS_READ = gql`
+  mutation MarkNotificationAsRead($notificationId: ID!) {
+    markNotificationAsRead(notificationId: $notificationId) {
+      id
+      read
+    }
+  }
+`;

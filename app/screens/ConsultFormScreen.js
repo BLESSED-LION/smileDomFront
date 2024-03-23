@@ -3,8 +3,6 @@ import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView, ActivityIn
 import { Ionicons } from '@expo/vector-icons';
 import { TextInput } from 'react-native-paper';
 import { Calendar } from 'react-native-calendars';
-import { db } from '../config/firebaseConfig';
-import { addDoc, collection } from 'firebase/firestore';
 import Toast from 'react-native-toast-message';
 import CustomInputModal from '../components/Modal/CustomInputModal'; // Assuming this is your custom modal component
 import useCreateConsultation from '../constants/consultationMutation';

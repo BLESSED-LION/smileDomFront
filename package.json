@@ -23,7 +23,6 @@
     "expo-sharing": "^11.10.0",
     "expo-splash-screen": "~0.26.4",
     "expo-status-bar": "~1.11.1",
-    "firebase": "^10.7.1",
     "graphql": "^15.8.0",
     "prop-types": "^15.8.1",
     "react": "18.2.0",

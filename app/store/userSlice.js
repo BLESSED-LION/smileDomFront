@@ -24,7 +24,7 @@ const userSlice = createSlice({
       state.token = action.payload.token
       state.isLoggedIn = true
       state.isNewUser = true
-    }
+    },
   },
 });
 

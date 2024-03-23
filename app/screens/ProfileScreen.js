@@ -2,32 +2,22 @@ import React from 'react';
 import { Text, View, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { useTheme } from '../constants/theme';
 import { Ionicons,Fontisto } from '@expo/vector-icons';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { signOut } from 'firebase/auth';
-import { auth } from '../config/firebaseConfig';
 
 const ProfileScreen = ({ route, navigation }) => {
   const { theme } = useTheme();
-  // const { user } = route.params;
   const u = useSelector((state) => state.user);
   const {user} = u;
   const handleGoBack = () => {
     navigation.goBack();
   };
+  const dispatch = useDispatch();
   const i = user.image ? {uri: user.image} :require("../../assets/icon.png")
 
   const handleLogout = () => {
-
-    signOut(auth)
-      .then(() => {
-        console.log("User signed out successfully!");
-        // Expo.Util.reload();
-      })
-      .catch((error) => {
-        console.error("Error signing out:", error);
-        // Handle sign-out errors
-      });
+    dispatch(logout());
+    navigation.navigate("login"); 
   }
 
   return (

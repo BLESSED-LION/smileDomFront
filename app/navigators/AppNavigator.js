@@ -12,11 +12,12 @@ import LoginScreen from '../screens/LoginScreen';
 import SignUpScreen from '../screens/SignUpScreen';
 import { useNavigation } from '@react-navigation/native';
 import SettingsScreen from '../screens/SettingScreen';
-import { useDoctors } from '../hooks/doctors';
 import { logout } from '../store/userSlice';
 import ConsultScreenHome from '../screens/ConsultScreenHome';
 import PatientListScreen from '../screens/PatientsListScreen';
 import { Entypo } from '@expo/vector-icons';
+import { useQuery } from '@apollo/client';
+import { GET_NOTIFICATIONS } from '../constants/mutations';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -58,14 +59,30 @@ const HeaderRightIcons = () => {
   const dispatch = useDispatch()
   const user = useSelector((state) => state.user.user);
   const navigation = useNavigation()
+  const { theme } = useTheme();
+  const [notifications, setNotification] = useState(1);
+
+  const { loading, error, data } = useQuery(GET_NOTIFICATIONS, {
+    variables: { userId: user._id },
+    pollInterval: 5000
+  });
+
+  useEffect(() => {
+    if(data && data.notifications){
+      const unreadCount = data.notifications.reduce((count, notification) => {
+        if (!notification.read) {
+          return count + 1;
+        }
+        return count;
+      }, 0);
+      setNotification(unreadCount)
+    }
+  }, [data]);
 
   const handleLogout = () => {
     dispatch(logout());
     navigation.navigate("login"); 
   }
-
-  const { theme } = useTheme();
-  const [notifications, setNotifications] = useState(1);
 
   return (
     <View style={[styles.headerRight, { justifyContent: 'center', alignItems: 'center' }]}>
@@ -115,7 +132,6 @@ const AppNavigator = ({ type, messages }) => {
   const { theme } = useTheme();
   const dispatch = useDispatch();
   const [isLogged, setUserLogged] = useState(false);
-  const {doctors} = useDoctors();
   const user = useSelector((state) => state.user);
   const isDoctor = user.user ? user.user.isDoctor : false;
   console.log("User ", user, "isDoctor", isDoctor)
