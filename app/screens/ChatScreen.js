@@ -1,30 +1,29 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, ActivityIndicator, Keyboard } from 'react-native'; // Import Keyboard
+import { View, Text, Image, TouchableOpacity, StyleSheet, ActivityIndicator, Keyboard } from 'react-native';
 import { GiftedChat } from 'react-native-gifted-chat';
 import { FontAwesome } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useMutation, useQuery } from '@apollo/client';
-import { GET_CHAT_MESSAGE, SEND_MESSAGE } from '../constants/mutations';
+import { GET_CHAT_MESSAGE, SEND_MESSAGE, CREATE_NOTIFICATION } from '../constants/mutations';
 import { useSelector } from 'react-redux';
 import { useTheme } from '../constants/theme';
 import { renderActions, renderComposer, renderInputToolbar, renderSend } from '../components/InputToolbar';
 
 const ChatScreen = ({ route, navigation }) => {
     const [messages, setMessages] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [call, setCall] = useState(false);
     const [sendingMessage, setSendingMessage] = useState(false);
     const user = useSelector((state) => state.user);
     const { patient } = route.params;
     const { user: doctor } = user;
-    const senderId = user.user.uuid;
+    const senderId = user.user && user.user.uuid;
     const receiverId = patient.uuid;
-    const { theme } = useTheme()
+    const { theme } = useTheme();
 
     const [sendMessage] = useMutation(SEND_MESSAGE);
+    const [createNotification] = useMutation(CREATE_NOTIFICATION);
 
-    const { loading: ld, error: err, data, refetch } = useQuery(GET_CHAT_MESSAGE, {
+    const { loading, data, refetch } = useQuery(GET_CHAT_MESSAGE, {
         variables: { senderId, receiverId },
         pollInterval: 3000,
     });
@@ -42,33 +41,26 @@ const ChatScreen = ({ route, navigation }) => {
             }));
 
             const sortedMessages = formattedMessages.sort((a, b) => b.createdAt - a.createdAt);
-
             setMessages(sortedMessages);
-            setSendingMessage(false);
         }
     }, [data]);
 
     const onSend = useCallback(async (newMessages = []) => {
-        const { _id, createdAt, text, user } = newMessages[0];
-
+        const { text, user } = newMessages[0];
         setSendingMessage(true);
 
         try {
-            await sendMessage({
-                variables: {
-                    senderId: senderId,
-                    receiverId: receiverId,
-                    message: text,
-                }
-            });
+            await Promise.all([
+                sendMessage({ variables: { senderId, receiverId, message: text } }),
+                createNotification({ variables: { input: { userId: patient.id, message: `New message from ${doctor && doctor.name}: ${text}` } } })
+            ]);
         } catch (error) {
-            console.error("Error sending message:", error);
+            console.error("Error sending message or creating notification:", error);
         }
 
-        // Dismiss the keyboard when a message is sent
+        setSendingMessage(false);
         Keyboard.dismiss();
-
-    }, [sendMessage, senderId, receiverId]);
+    }, [sendMessage, createNotification, senderId, receiverId, patient.id, doctor]);
 
     return (
         <View style={styles.container}>
@@ -91,30 +83,25 @@ const ChatScreen = ({ route, navigation }) => {
                         <TouchableOpacity style={styles.tico} onPress={() => setCall(true)}>
                             <FontAwesome name="video-camera" size={24} color={theme.colors.yellow} />
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.tico} onPress={() => navigation.navigate("previousConsult", {
-                            patient,
-                            doctor,
-                        })}>
+                        <TouchableOpacity style={styles.tico} onPress={() => navigation.navigate("previousConsult", { patient, doctor })}>
                             <FontAwesome name="heartbeat" size={24} color={theme.colors.yellow} />
                         </TouchableOpacity>
                     </View>
                 </View>
             </View>
             <View style={{ flex: 1, backgroundColor: "#fff", paddingBottom: 10 }}>
-                {ld && <ActivityIndicator style={{alignSelf:"center", marginTop: 50}} />}
+                {loading && <ActivityIndicator style={{ alignSelf: "center", marginTop: 50 }} />}
                 <GiftedChat
                     messages={messages}
                     onSend={onSend}
                     alwaysShowSend
-                    user={{
-                        _id: doctor.uuid,
-                    }}
+                    user={{ _id: doctor && doctor.uuid }}
                     renderInputToolbar={renderInputToolbar}
                     renderActions={renderActions}
                     renderComposer={renderComposer}
                     renderSend={renderSend}
                 />
-                {sendingMessage && <ActivityIndicator style={{alignSelf:"center", marginTop: 50}} />}
+                {sendingMessage && <ActivityIndicator style={{ alignSelf: "center", marginTop: 50 }} />}
             </View>
         </View>
     );

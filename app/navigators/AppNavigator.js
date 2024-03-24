@@ -21,6 +21,7 @@ import { GET_NOTIFICATIONS } from '../constants/mutations';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
+let no_nots = 0;
 
 const AnimatedTabBarIcon = ({ iconName, focused }) => {
   const { theme } = useTheme();
@@ -63,7 +64,7 @@ const HeaderRightIcons = () => {
   const [notifications, setNotification] = useState(1);
 
   const { loading, error, data } = useQuery(GET_NOTIFICATIONS, {
-    variables: { userId: user._id },
+    variables: { userId: user && user._id },
     pollInterval: 5000
   });
 
@@ -76,6 +77,7 @@ const HeaderRightIcons = () => {
         return count;
       }, 0);
       setNotification(unreadCount)
+      no_nots = unreadCount;
     }
   }, [data]);
 
@@ -227,6 +229,7 @@ const AppNavigator = ({ type, messages }) => {
             options={{
               headerShown: false,
               headerTitleAlign: 'center',
+              tabBarBadge: no_nots,
               headerStyle: {
                 backgroundColor: theme.colors.Background,
               },
@@ -250,7 +253,7 @@ const AppNavigator = ({ type, messages }) => {
           {user.isLoggedIn && !isDoctor &&
         <Tab.Screen name="Sessions" component={SessonsScreen}
           options={({ route }) => ({
-            tabBarBadge: 0,
+            tabBarBadge: no_nots,
             headerShown: false,
             tabBarLabel: 'Sessions',
             tabBarVisible: false,

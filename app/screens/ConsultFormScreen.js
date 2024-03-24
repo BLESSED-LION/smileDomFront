@@ -48,7 +48,7 @@ const ConsultationForm = ({ navigation, route }) => {
         const values = Object.values(dat).map(array => array[0]);
         const consultationData = {
             patient: patient.id,
-            doctor: doctor._id,
+            doctor: doctor && doctor._id,
             // date: Date.now,
             headings: keys,
             content: values,

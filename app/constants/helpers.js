@@ -26,6 +26,14 @@ export function formatTime(milliseconds) {
   }
 }
 
+export function truncateString(str, maxLength = 20) {
+  if (str.length <= maxLength) {
+      return str;
+  } else {
+      return str.substring(0, maxLength) + '...';
+  }
+}
+
 export function generateRandomGravatarUrl() {
   // Generate a random 8-character MD5 hash
   const randomHash = Math.random().toString(36).substring(2, 10);

@@ -7,7 +7,8 @@ import { renderInputToolbar, renderActions, renderComposer, renderSend } from '.
 import { useNavigation } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import { useMutation, useQuery } from '@apollo/client';
-import { GET_CHAT_MESSAGE, SEND_MESSAGE } from '../constants/mutations';
+import { CREATE_NOTIFICATION, GET_CHAT_MESSAGE, SEND_MESSAGE } from '../constants/mutations';
+import Toast from 'react-native-toast-message';
 
 const PatientChatScreen = ({ route }) => {
     const [messages, setMessages] = useState([]);
@@ -16,12 +17,13 @@ const PatientChatScreen = ({ route }) => {
     const { theme } = useTheme();
     const { doc } = route.params;
     const user = useSelector((state) => state.user);
-    const senderId = user.user && user.user.uuid;
+    const { u } = user;
+    const senderId = u && u.uuid;
     const receiverId = doc && doc.uuid;
     const navigation = useNavigation();
-    const u = useSelector((state) => state.user.user);
 
     const [sendMessage] = useMutation(SEND_MESSAGE);
+    const [createNotification] = useMutation(CREATE_NOTIFICATION);
 
     const { loading: ld, data } = useQuery(GET_CHAT_MESSAGE, {
         variables: { senderId, receiverId },
@@ -52,13 +54,22 @@ const PatientChatScreen = ({ route }) => {
         setSendingMessage(true)
 
         try {
-            await sendMessage({
-                variables: { senderId, receiverId, message: text },
-            });
+            await Promise.all([
+                sendMessage({ variables: { senderId, receiverId, message: text } }),
+                createNotification({ variables: { input: { userId: doc.id, message: `New message from ${u && u.name}: ${text}` } } })
+            ]);
         } catch (error) {
-            console.error("Error sending message:", error);
+            console.error("Error sending message or creating notification:", error);
+            Toast.show({
+                text1: "Error sending message",
+                type: "errpr", // Can be 'success', 'info', 'warning', or 'error'
+                position: "top", // Can be 'top', 'center', or 'bottom'
+                duration: 3000, // Duration in milliseconds
+            });
         }
-    }, [sendMessage, senderId, receiverId]);
+
+        setSendingMessage(false);
+    }, [sendMessage, senderId, receiverId, createNotification]);
 
     return (
         <View style={styles.container}>
@@ -97,9 +108,9 @@ const PatientChatScreen = ({ route }) => {
                     renderActions={renderActions}
                     renderComposer={renderComposer}
                     renderSend={renderSend}
-                    user={{ _id: user.user.uuid }}
+                    user={{ _id: user && user.user.uuid }}
                 />
-                {sendingMessage && <ActivityIndicator style={{alignSelf:"center", marginTop: 50}} />}
+                {sendingMessage && <ActivityIndicator style={{ alignSelf: "center", marginTop: 50 }} />}
             </View>
         </View>
     );

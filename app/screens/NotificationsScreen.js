@@ -1,19 +1,19 @@
-import { useQuery } from '@apollo/client';
-import React, { useState, useEffect } from 'react'
-import { StyleSheet, Text, View, TouchableOpacity, Image, FlatList } from 'react-native'
-import { GET_NOTIFICATIONS } from '../constants/mutations';
+import { useQuery, useMutation } from '@apollo/client';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, Image, FlatList } from 'react-native';
+import { GET_NOTIFICATIONS, MARK_NOTIFICATION_AS_READ } from '../constants/mutations'; // Assuming you have the mutation for marking notifications as read
 import { useSelector } from 'react-redux';
-import { formatTime } from '../constants/helpers';
-import { markNotificationAsRead } from '../constants/markNotificationsAsRead';
+import { formatTime, truncateString } from '../constants/helpers';
 
 export default Notifications = () => {
   const u = useSelector((state) => state.user);
   const [nots, setNots] = useState([]);
   const { user } = u;
   const { loading, error, data } = useQuery(GET_NOTIFICATIONS, {
-    variables: { userId: user._id },
+    variables: { userId: user && user._id },
     pollInterval: 5000
   });
+  const [markNotificationAsRead] = useMutation(MARK_NOTIFICATION_AS_READ);
 
   useEffect(() => {
     if (data && data.notifications) {
@@ -25,48 +25,41 @@ export default Notifications = () => {
   if (loading) return <Text>Loading...</Text>;
   if (error) return <Text>Error! {error.message}</Text>;
 
+  const handleNotificationPress = (notificationId) => {
+    markNotificationAsRead({ variables: { notificationId } });
+  };
+
+  const renderItem = ({ item }) => {
+    const { id, message, createdAt, read, attachment } = item;
+    let mainContentStyle = styles.mainContent;
+    let backgroundColor = read ? '#FFFFFF' : '#F0F8FF'; // Different background color for read and unread notifications
+
+    return (
+      <TouchableOpacity style={[styles.container, { backgroundColor }]} onPress={() => handleNotificationPress(id)}>
+        <View style={styles.content}>
+          <View style={mainContentStyle}>
+            <View style={styles.text}>
+              <Text style={styles.name}>{truncateString(message)}</Text>
+              <Text>{message}</Text>
+            </View>
+            <Text style={styles.timeAgo}>{formatTime(parseFloat(createdAt))}</Text>
+          </View>
+          {attachment && <Image style={styles.attachment} source={{ uri: attachment }} />}
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <FlatList
       style={styles.root}
       data={nots}
-      ItemSeparatorComponent={() => {
-        return <View style={styles.separator} />
-      }}
-      keyExtractor={item => {
-        return item.id
-      }}
-      renderItem={item => {
-        const Notification = item.item
-        let attachment = <View />
-        const handleNotificationPress = () => {
-          // Assuming you have a function to mark notifications as read
-          markNotificationAsRead(Notification.id);
-        };
-
-        let mainContentStyle
-        if (Notification.attachment) {
-          mainContentStyle = styles.mainContent
-          attachment = <Image style={styles.attachment} source={{ uri: Notification.attachment }} />
-        }
-        return (
-          <TouchableOpacity style={styles.container} onPress={handleNotificationPress}>
-            {/* <Image source={{ uri: Notification.image }} style={styles.avatar} /> */}
-            <View style={styles.content}>
-              <View style={mainContentStyle}>
-                <View style={styles.text}>
-                  <Text style={styles.name}>{Notification.message}</Text>
-                  <Text>{Notification.message}</Text>
-                </View>
-                <Text style={styles.timeAgo}>{formatTime(parseFloat(Notification.createdAt))}</Text>
-              </View>
-              {attachment}
-            </View>
-          </TouchableOpacity>
-        )
-      }}
+      ItemSeparatorComponent={() => <View style={styles.separator} />}
+      keyExtractor={item => item.id}
+      renderItem={renderItem}
     />
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   root: {
@@ -74,15 +67,9 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: 16,
-    flexDirection: 'row',
     borderBottomWidth: 1,
     borderColor: '#FFFFFF',
     alignItems: 'flex-start',
-  },
-  avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
   },
   text: {
     marginBottom: 5,
@@ -93,18 +80,14 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 16,
     marginRight: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   mainContent: {
     marginRight: 60,
   },
-  img: {
-    height: 50,
-    width: 50,
-    margin: 0,
-  },
   attachment: {
-    position: 'absolute',
-    right: 0,
     height: 50,
     width: 50,
   },
@@ -120,4 +103,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#1E90FF',
   },
-})
+});

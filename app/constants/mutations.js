@@ -98,3 +98,15 @@ export const MARK_NOTIFICATION_AS_READ = gql`
     }
   }
 `;
+
+export const CREATE_NOTIFICATION = gql`
+  mutation CreateNotification($input: CreateNotificationInput!) {
+    createNotification(input: $input) {
+      id
+      userId
+      message
+      read
+      createdAt
+    }
+  }
+`;
