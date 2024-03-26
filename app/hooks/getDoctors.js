@@ -14,6 +14,7 @@ const GET_ALL_DOCTORS = gql`
       yearsOfExperience,
       followersCount
       userData {
+        _id
         uuid
         email
         name

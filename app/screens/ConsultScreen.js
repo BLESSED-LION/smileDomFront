@@ -15,6 +15,7 @@ const ConsultScreen = () => {
   const [gp, setGp] = useState([]);
   const [dentists, setDentists] = useState([]);
   const user = useSelector((state) => state.user);
+  console.log(doctors)
 
   useEffect(() => {
     const gp = doctors.filter((doctor) => !doctor.specialization || doctor.specialization.toLowerCase() === "general practitioner");

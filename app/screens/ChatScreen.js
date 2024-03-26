@@ -9,10 +9,12 @@ import { GET_CHAT_MESSAGE, SEND_MESSAGE, CREATE_NOTIFICATION } from '../constant
 import { useSelector } from 'react-redux';
 import { useTheme } from '../constants/theme';
 import { renderActions, renderComposer, renderInputToolbar, renderSend } from '../components/InputToolbar';
+import GoogleMeetScreen from './VideoCallScreen';
 
 const ChatScreen = ({ route, navigation }) => {
     const [messages, setMessages] = useState([]);
     const [sendingMessage, setSendingMessage] = useState(false);
+    const [showVideoCall, setShowVideoCall] = useState(false); // State to control showing video call screen
     const user = useSelector((state) => state.user);
     const { patient } = route.params;
     const { user: doctor } = user;
@@ -74,13 +76,13 @@ const ChatScreen = ({ route, navigation }) => {
                 <View style={styles.userInfo}>
                     <TouchableOpacity style={styles.userName}>
                         <Text style={{ fontWeight: "500" }}>{patient && patient.name}</Text>
-                        <Text>Online</Text>
+                        <Text>Online</Text> 
                     </TouchableOpacity>
                     <View style={styles.iconContainer}>
                         <TouchableOpacity style={styles.tico}>
                             <FontAwesome name="search" size={24} color={theme.colors.yellow} />
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.tico} onPress={() => setCall(true)}>
+                        <TouchableOpacity style={styles.tico} onPress={() => setShowVideoCall(true)}>
                             <FontAwesome name="video-camera" size={24} color={theme.colors.yellow} />
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.tico} onPress={() => navigation.navigate("previousConsult", { patient, doctor })}>
@@ -91,16 +93,20 @@ const ChatScreen = ({ route, navigation }) => {
             </View>
             <View style={{ flex: 1, backgroundColor: "#fff", paddingBottom: 10 }}>
                 {loading && <ActivityIndicator style={{ alignSelf: "center", marginTop: 50 }} />}
-                <GiftedChat
-                    messages={messages}
-                    onSend={onSend}
-                    alwaysShowSend
-                    user={{ _id: doctor && doctor.uuid }}
-                    renderInputToolbar={renderInputToolbar}
-                    renderActions={renderActions}
-                    renderComposer={renderComposer}
-                    renderSend={renderSend}
-                />
+                {!showVideoCall ? ( // Render GiftedChat when video call screen is not shown
+                    <GiftedChat
+                        messages={messages}
+                        onSend={onSend}
+                        alwaysShowSend
+                        user={{ _id: doctor && doctor.uuid }}
+                        renderInputToolbar={renderInputToolbar}
+                        renderActions={renderActions}
+                        renderComposer={renderComposer}
+                        renderSend={renderSend}
+                    />
+                ) : (
+                    <GoogleMeetScreen /> // Render GoogleMeetScreen when video call button is pressed
+                )}
                 {sendingMessage && <ActivityIndicator style={{ alignSelf: "center", marginTop: 50 }} />}
             </View>
         </View>

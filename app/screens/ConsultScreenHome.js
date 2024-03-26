@@ -9,7 +9,7 @@ import ConsultationForm from "./ConsultFormScreen";
 import CallScreen from "./CallScreen";
 import { createStackNavigator } from "@react-navigation/stack";
 import PaymentsScreen from "./PaymentScreen";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import VideoCallScreen from "./VideoCallScreen";
 import PreviousPatient from "./PreviousPatient";
 
@@ -18,6 +18,7 @@ const Stack = createStackNavigator();
 function ConsultScreenHome() {
   const user = useSelector((state) => state.user);
   const free = user.user && user.user.duration === "free";
+  // console.log()
 
   return (
     <Stack.Navigator

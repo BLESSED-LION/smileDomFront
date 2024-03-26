@@ -31,13 +31,13 @@ const SignUpScreen = () => {
     mutation registerUser(
       $username: String!
       $email: String!
-      $phoneNumber: String!
+      $phone: String!
       $password: String!
     ) {
       registerUser(
         name: $username
         email: $email
-        phone: $phoneNumber
+        phone: $phone
         password: $password
       ) {
         token,
@@ -115,7 +115,7 @@ const SignUpScreen = () => {
       return;
     }
     setLoading(true);
-    registerUser({variables: {username,email,phoneNumber,password},})
+    registerUser({variables: {username , email, phone: phoneNumber, password},})
   };
 
   return (

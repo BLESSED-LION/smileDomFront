@@ -6,6 +6,7 @@ import * as Sharing from 'expo-sharing';
 const ConsultationResultScreen = ({ route }) => {
   const { consultation, patient, doctor } = route.params;
   const [isLoading, setIsLoading] = useState(false);
+  const [path, setPath] = useState('');
 
   const generatePDF = async () => {
     setIsLoading(true);
@@ -118,6 +119,7 @@ const ConsultationResultScreen = ({ route }) => {
       `;
 
       const pdfPath = await Print.printToFileAsync({ html: htmlContent });
+      setPath(pdfPath)
 
       await Sharing.shareAsync(pdfPath.uri);
     } catch (error) {
@@ -153,6 +155,7 @@ const ConsultationResultScreen = ({ route }) => {
                 </View>
               ))}
             </View>
+            {path && <Text>{path}</Text>}
             <Button 
               color={"#BFD101"} 
               title="Generate PDF" 

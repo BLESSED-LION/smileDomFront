@@ -9,16 +9,20 @@ import { useSelector } from 'react-redux';
 import { useMutation, useQuery } from '@apollo/client';
 import { CREATE_NOTIFICATION, GET_CHAT_MESSAGE, SEND_MESSAGE } from '../constants/mutations';
 import Toast from 'react-native-toast-message';
+import GoogleMeetScreen from './VideoCallScreen';
 
 const PatientChatScreen = ({ route }) => {
     const [messages, setMessages] = useState([]);
     const [text, setText] = useState('');
     const [sendingMessage, setSendingMessage] = useState(false);
+    const [showVideoCall, setShowVideoCall] = useState(false);
     const { theme } = useTheme();
     const { doc } = route.params;
     const user = useSelector((state) => state.user);
     const { u } = user;
-    const senderId = u && u.uuid;
+    const senderId = user.user && user.user.uuid;;
+    console.log(senderId)
+    const docId = doc && doc.userData._id;
     const receiverId = doc && doc.uuid;
     const navigation = useNavigation();
 
@@ -56,13 +60,13 @@ const PatientChatScreen = ({ route }) => {
         try {
             await Promise.all([
                 sendMessage({ variables: { senderId, receiverId, message: text } }),
-                createNotification({ variables: { input: { userId: doc.id, message: `New message from ${u && u.name}: ${text}` } } })
+                createNotification({ variables: { input: { userId: docId, message: `New message from ${u && u.name}: ${text}` } } })
             ]);
         } catch (error) {
             console.error("Error sending message or creating notification:", error);
             Toast.show({
-                text1: "Error sending message",
-                type: "errpr", // Can be 'success', 'info', 'warning', or 'error'
+                text1: `Error sending message to ${docId}`,
+                type: "error", // Can be 'success', 'info', 'warning', or 'error'
                 position: "top", // Can be 'top', 'center', or 'bottom'
                 duration: 3000, // Duration in milliseconds
             });
@@ -86,10 +90,10 @@ const PatientChatScreen = ({ route }) => {
                         <TouchableOpacity style={styles.tico}>
                             <FontAwesome name="search" size={24} color={theme.colors.yellow} />
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.tico} onPress={() => navigation.navigate("videoCallScreen")}>
-                            <FontAwesome name="video-camera" size={24} color={theme.colors.yellow} />
+                        <TouchableOpacity style={styles.tico} onPress={() => setShowVideoCall(true)}>
+                            <FontAwesome name="video-camera" size={24} color={theme.colors.yellow} /> 
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.tico} onPress={() => navigation.navigate("previousConsult", { patient: u, doctor: doc })}>
+                        <TouchableOpacity style={styles.tico} onPress={() => navigation.navigate("previousConsult", { patient: user.user, doctor: doc })}>
                             <FontAwesome name="book" size={24} color={theme.colors.yellow} />
                         </TouchableOpacity>
                     </View>
@@ -97,7 +101,7 @@ const PatientChatScreen = ({ route }) => {
             </View>
             <View style={{ flex: 1, backgroundColor: "#fff", paddingBottom: 10 }}>
                 {ld && <ActivityIndicator style={{ alignSelf: "center", marginTop: 50 }} />}
-                <GiftedChat
+                {!showVideoCall ? (<GiftedChat
                     messages={messages}
                     onSend={onSend}
                     text={text}
@@ -109,7 +113,7 @@ const PatientChatScreen = ({ route }) => {
                     renderComposer={renderComposer}
                     renderSend={renderSend}
                     user={{ _id: user && user.user.uuid }}
-                />
+                />): (<GoogleMeetScreen />)}
                 {sendingMessage && <ActivityIndicator style={{ alignSelf: "center", marginTop: 50 }} />}
             </View>
         </View>
